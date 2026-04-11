@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BoviBot — Assistant IA Élevage Bovin</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: #f5f0e8; color: #1a202c; }
+  header { background: #7c4f1e; color: white; padding: 1rem 2rem; display: flex; align-items: center; gap: 1rem; }
+  header h1 { font-size: 1.4rem; }
+  .container { display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem; padding: 1.5rem; max-width: 1400px; margin: 0 auto; }
+  .card { background: white; border-radius: 12px; padding: 1.2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 1rem; }
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+  .stat { background: #fdf6ec; border-radius: 8px; padding: 0.8rem; text-align: center; }
+  .stat .val { font-size: 1.8rem; font-weight: bold; color: #7c4f1e; }
+  .stat .lbl { font-size: 0.75rem; color: #64748b; }
+  .stat.critical .val { color: #dc2626; }
+  .chat-box { height: 380px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; background: #fafaf8; }
+  .msg { margin-bottom: 0.8rem; }
+  .msg.user .bubble { background: #7c4f1e; color: white; margin-left: auto; }
+  .msg.bot .bubble { background: white; border: 1px solid #e2e8f0; }
+  .msg.confirm .bubble { background: #fef9c3; border: 2px solid #f59e0b; }
+  .bubble { display: inline-block; padding: 0.6rem 1rem; border-radius: 12px; max-width: 85%; font-size: 0.9rem; line-height: 1.5; }
+  .msg.user { text-align: right; }
+  .confirm-btns { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+  .btn-oui { background: #16a34a; color: white; border: none; border-radius: 6px; padding: 0.4rem 1rem; cursor: pointer; font-size: 0.9rem; }
+  .btn-non { background: #dc2626; color: white; border: none; border-radius: 6px; padding: 0.4rem 1rem; cursor: pointer; font-size: 0.9rem; }
+  .chat-input { display: flex; gap: 0.5rem; }
+  .chat-input input { flex: 1; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.7rem 1rem; font-size: 0.95rem; outline: none; }
+  .chat-input input:focus { border-color: #7c4f1e; }
+  .chat-input button { background: #7c4f1e; color: white; border: none; border-radius: 8px; padding: 0.7rem 1.2rem; cursor: pointer; }
+  .suggestions { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.8rem; }
+  .suggestions button { background: #fdf6ec; color: #7c4f1e; border: 1px solid #d4a76a; border-radius: 20px; padding: 0.3rem 0.8rem; font-size: 0.78rem; cursor: pointer; }
+  .suggestions button:hover { background: #fde9c9; }
+  .sql-preview { background: #1e293b; color: #94a3b8; font-family: monospace; font-size: 0.75rem; padding: 0.5rem; border-radius: 6px; margin-top: 0.4rem; white-space: pre-wrap; }
+  .results table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+  .results th { background: #7c4f1e; color: white; padding: 0.5rem; text-align: left; }
+  .results td { padding: 0.45rem 0.5rem; border-bottom: 1px solid #e2e8f0; }
+  .results tr:hover td { background: #fdf6ec; }
+  h2 { font-size: 1rem; color: #374151; margin-bottom: 0.8rem; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.72rem; font-weight: 600; }
+  .badge-green { background: #dcfce7; color: #166534; }
+  .badge-orange { background: #fff7ed; color: #9a3412; }
+  .badge-red { background: #fee2e2; color: #991b1b; }
+  .alerte-item { padding: 0.5rem 0.8rem; border-radius: 6px; margin-bottom: 0.4rem; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; }
+  .alerte-critical { background: #fee2e2; border-left: 4px solid #dc2626; }
+  .alerte-warning  { background: #fff7ed; border-left: 4px solid #f59e0b; }
+  .alerte-info     { background: #eff6ff; border-left: 4px solid #3b82f6; }
+  .alerte-item button { background: none; border: none; cursor: pointer; font-size: 1rem; }
+</style>
+</head>
+<body>
+<header>
+  <span style="font-size:2rem">🐄</span>
+  <div><h1>BoviBot</h1><small>Assistant IA — Gestion d'Élevage Bovin</small></div>
+</header>
+
+<div class="container">
+  <!-- Colonne gauche -->
+  <div>
+    <div class="card">
+      <h2>📊 Tableau de bord</h2>
+      <div class="stats-grid" id="stats">
+        <div class="stat"><div class="val" id="s-actifs">—</div><div class="lbl">Animaux actifs</div></div>
+        <div class="stat"><div class="val" id="s-gestation">—</div><div class="lbl">En gestation</div></div>
+        <div class="stat"><div class="val" id="s-alertes">—</div><div class="lbl">Alertes actives</div></div>
+        <div class="stat critical"><div class="val" id="s-critical">—</div><div class="lbl">Alertes critiques</div></div>
+        <div class="stat"><div class="val" id="s-ventes">—</div><div class="lbl">Ventes ce mois</div></div>
+        <div class="stat"><div class="val" id="s-ca">—</div><div class="lbl">CA mois (FCFA)</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>⚠️ Alertes récentes</h2>
+      <div id="alertes-list"><p style="color:#94a3b8;font-size:0.85rem">Chargement...</p></div>
+    </div>
+
+    <div class="card">
+      <h2>🍼 Gestations en cours</h2>
+      <div id="gestations-list"><p style="color:#94a3b8;font-size:0.85rem">Chargement...</p></div>
+    </div>
+  </div>
+
+  <!-- Colonne droite : Chat -->
+  <div class="card">
+    <h2>💬 Assistant BoviBot</h2>
+    <div class="suggestions">
+      <button onclick="ask('Liste tous les animaux actifs avec leur âge et GMQ')">Troupeau complet</button>
+      <button onclick="ask('Quels animaux ont un GMQ inférieur à 0.3 kg/jour ?')">GMQ faibles</button>
+      <button onclick="ask('Quelles femelles sont en gestation et quand vêlent-elles ?')">Gestations</button>
+      <button onclick="ask('Quels animaux n\'ont pas été vaccinés depuis 6 mois ?')">Vaccinations</button>
+      <button onclick="ask('Enregistre une pesée de 325 kg pour TAG-001 aujourd\'hui')">Saisir pesée</button>
+      <button onclick="ask('Quel est le coût total d\'alimentation ce mois-ci ?')">Coût alim.</button>
+    </div>
+
+    <div class="chat-box" id="chat-box">
+      <div class="msg bot">
+        <div class="bubble">🐄 Bonjour ! Je suis BoviBot.<br>Posez vos questions sur votre troupeau ou demandez-moi d'enregistrer une pesée, une vente...</div>
+      </div>
+    </div>
+
+    <div class="chat-input">
+      <input type="text" id="user-input" placeholder="Ex: Quel animal a le meilleur GMQ ce mois ?" onkeypress="if(event.key==='Enter') sendMessage()">
+      <button onclick="sendMessage()">Envoyer ➤</button>
+    </div>
+
+    <div id="results-section" style="margin-top:1rem;display:none">
+      <h2>📋 Résultats</h2>
+      <div class="results" id="results-table"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = 'http://127.0.0.1:8002';
+let pendingAction = null;
+let history = [];
+
+async function loadDashboard() {
+  try {
+    const d = await fetch(`${API}/api/dashboard`).then(r=>r.json());
+    document.getElementById('s-actifs').textContent = d.total_actifs ?? '—';
+    document.getElementById('s-gestation').textContent = d.en_gestation ?? '—';
+    document.getElementById('s-alertes').textContent = d.alertes_actives ?? '—';
+    document.getElementById('s-critical').textContent = d.alertes_critiques ?? '—';
+    document.getElementById('s-ventes').textContent = d.ventes_mois ?? '—';
+    document.getElementById('s-ca').textContent = Number(d.ca_mois||0).toLocaleString('fr-SN');
+  } catch(e) {}
+}
+
+async function loadAlertes() {
+  try {
+    const data = await fetch(`${API}/api/alertes`).then(r=>r.json());
+    const el = document.getElementById('alertes-list');
+    if (!data.length) { el.innerHTML = '<p style="color:#22c55e;font-size:0.85rem">✅ Aucune alerte active</p>'; return; }
+    el.innerHTML = data.slice(0,6).map(a => `
+      <div class="alerte-item alerte-${a.niveau}">
+        <span>${a.animal_tag ? '['+a.animal_tag+'] ' : ''}${a.message}</span>
+        <button onclick="traiterAlerte(${a.id})" title="Marquer comme traitée">✓</button>
+      </div>`).join('');
+  } catch(e) {}
+}
+
+async function loadGestations() {
+  try {
+    const data = await fetch(`${API}/api/reproduction/en-cours`).then(r=>r.json());
+    const el = document.getElementById('gestations-list');
+    if (!data.length) { el.innerHTML = '<p style="color:#94a3b8;font-size:0.85rem">Aucune gestation en cours</p>'; return; }
+    el.innerHTML = data.map(g => `
+      <div style="padding:0.4rem 0;border-bottom:1px solid #f0e8d8;font-size:0.85rem">
+        🐄 <strong>${g.mere_tag}</strong> × ${g.pere_tag} — Vêlage : <strong>${g.date_velage_prevue}</strong>
+        <span style="color:${g.jours_restants<14?'#dc2626':'#16a34a'};font-weight:bold"> (J-${g.jours_restants})</span>
+      </div>`).join('');
+  } catch(e) {}
+}
+
+async function traiterAlerte(id) {
+  await fetch(`${API}/api/alertes/${id}/traiter`, {method:'POST'});
+  loadAlertes(); loadDashboard();
+}
+
+function ask(q) { document.getElementById('user-input').value = q; sendMessage(); }
+
+function addMessage(role, text, sql=null, extra=null) {
+  const box = document.getElementById('chat-box');
+  const div = document.createElement('div');
+  div.className = `msg ${role}`;
+  let html = `<div class="bubble">${text}${sql?`<div class="sql-preview">${sql}</div>`:''}</div>`;
+  if (extra) html += extra;
+  div.innerHTML = html;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+  return div;
+}
+
+async function confirmAction(yes) {
+  if (!pendingAction) return;
+  document.getElementById('confirm-div')?.remove();
+  if (yes) {
+    addMessage('bot', '⏳ Exécution en cours...');
+    const r = await fetch(`${API}/api/chat`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({question:'', confirm_action:true, pending_action:pendingAction})
+    });
+    const data = await r.json();
+    document.querySelector('.msg.bot:last-child')?.remove();
+    addMessage('bot', data.answer || 'Action effectuée !');
+    pendingAction = null;
+    loadDashboard(); loadAlertes();
+  } else {
+    addMessage('bot', '❌ Action annulée.');
+    pendingAction = null;
+  }
+}
+
+async function sendMessage() {
+  const input = document.getElementById('user-input');
+  const question = input.value.trim();
+  if (!question) return;
+  input.value = '';
+  addMessage('user', question);
+  history.push({role:'user', content:question});
+  const loading = addMessage('bot', '⏳ Analyse en cours...');
+
+  try {
+    const r = await fetch(`${API}/api/chat`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({question, history: history.slice(-6)})
+    });
+    const data = await r.json();
+    loading.remove();
+
+    if (data.type === 'action_pending') {
+      pendingAction = data.pending_action;
+      const confirmDiv = document.createElement('div');
+      confirmDiv.id = 'confirm-div';
+      confirmDiv.className = 'msg confirm';
+      confirmDiv.innerHTML = `<div class="bubble">⚠️ ${data.confirmation}<div class="confirm-btns"><button class="btn-oui" onclick="confirmAction(true)">✅ Confirmer</button><button class="btn-non" onclick="confirmAction(false)">❌ Annuler</button></div></div>`;
+      document.getElementById('chat-box').appendChild(confirmDiv);
+    } else {
+      addMessage('bot', data.answer + (data.count !== undefined ? ` (${data.count} résultat${data.count>1?'s':''})` : ''), data.sql);
+      history.push({role:'assistant', content: data.answer});
+    }
+
+    if (data.data && data.data.length > 0) {
+      document.getElementById('results-section').style.display = 'block';
+      const keys = Object.keys(data.data[0]);
+      const rows = data.data.map(row=>`<tr>${keys.map(k=>`<td>${row[k]??''}</td>`).join('')}</tr>`).join('');
+      document.getElementById('results-table').innerHTML = `<table><thead><tr>${keys.map(k=>`<th>${k}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table>`;
+    }
+    document.getElementById('chat-box').scrollTop = 9999;
+  } catch(e) {
+    loading.remove();
+    addMessage('bot', '❌ Erreur de connexion au serveur.');
+  }
+}
+
+loadDashboard(); loadAlertes(); loadGestations();
+</script>
+</body>
+</html>
