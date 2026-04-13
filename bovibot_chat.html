@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BoviBot — Chat IA</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #F5F0E8;
+    --surface:  #FDFAF4;
+    --surface2: #EDE8DC;
+    --surface3: #21262D;
+    --border:   rgba(255,255,255,0.07);
+    --border2:  rgba(255,255,255,0.13);
+    --text:     #E6EDF3;
+    --muted:    #7D8590;
+    --accent:   #D4A843;
+    --green:    #3FB950;
+    --red:      #F85149;
+    --orange:   #F0883E;
+    --blue:     #58A6FF;
+    --purple:   #BC8CFF;
+    --font-h:   'Syne', sans-serif;
+    --font-b:   'DM Sans', sans-serif;
+    --font-m:   'DM Mono', monospace;
+  }
+
+  html, body { background: var(--bg); color: var(--text); font-family: var(--font-b); font-size: 14px; height: 100%; overflow: hidden; }
+
+  /* ── Layout ── */
+  .layout { display: flex; height: 100vh; }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: 220px; flex-shrink: 0;
+    background: var(--surface); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+  }
+  .sidebar-logo { padding: 22px 20px 18px; border-bottom: 1px solid var(--border); }
+  .logo-mark { display: flex; align-items: center; gap: 10px; }
+  .logo-icon { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .logo-name { font-family: var(--font-h); font-size: 17px; font-weight: 800; letter-spacing: -0.03em; }
+  .logo-tagline { font-size: 10px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 3px; padding-left: 42px; }
+  .sidebar-nav { flex: 1; padding: 14px 12px; display: flex; flex-direction: column; gap: 2px; overflow-y: auto; }
+  .nav-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding: 10px 8px 5px; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; cursor: pointer; color: var(--muted); font-size: 13px; transition: all 0.15s; }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: rgba(212,168,67,0.12); color: var(--accent); font-weight: 500; }
+  .nav-icon { width: 15px; height: 15px; flex-shrink: 0; }
+  .nav-badge { margin-left: auto; background: var(--red); color: #fff; font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 20px; font-family: var(--font-m); }
+  .sidebar-footer { padding: 14px 12px; border-top: 1px solid var(--border); }
+  .farm-selector { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; background: var(--surface2); cursor: pointer; }
+  .farm-avatar { width: 26px; height: 26px; border-radius: 6px; background: linear-gradient(135deg, #D4A843, #A67C2E); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #F5F0E8; flex-shrink: 0; }
+  .farm-name { font-size: 12px; font-weight: 500; }
+  .farm-sub  { font-size: 10px; color: var(--muted); }
+
+  /* ── Chat area ── */
+  .chat-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+  /* Topbar */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 28px;
+    background: rgba(13,17,23,0.85); backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 12px; }
+  .bot-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: linear-gradient(135deg, #D4A843 0%, #A67C2E 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0; position: relative;
+  }
+  .bot-online {
+    position: absolute; bottom: 0; right: 0;
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--green); border: 2px solid var(--bg);
+  }
+  .topbar-title { font-family: var(--font-h); font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
+  .topbar-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
+
+  /* Mode toggle */
+  .mode-toggle {
+    display: flex; align-items: center;
+    background: var(--surface2); border: 1px solid var(--border2);
+    border-radius: 10px; padding: 3px; gap: 2px;
+  }
+  .mode-btn {
+    display: flex; align-items: center; gap: 6px;
+    padding: 6px 14px; border-radius: 8px;
+    font-size: 12px; font-weight: 500;
+    cursor: pointer; border: none; background: none;
+    color: var(--muted); transition: all 0.2s;
+    font-family: var(--font-b);
+  }
+  .mode-btn.active { color: var(--text); }
+  .mode-btn.consultation.active { background: rgba(88,166,255,0.18); color: var(--blue); }
+  .mode-btn.action.active       { background: rgba(240,136,62,0.18); color: var(--orange); }
+  .mode-dot { width: 7px; height: 7px; border-radius: 50%; }
+  .mode-btn.consultation .mode-dot { background: var(--blue); }
+  .mode-btn.action       .mode-dot { background: var(--orange); }
+
+  /* Mode banner */
+  .mode-banner {
+    padding: 8px 28px; font-size: 12px;
+    display: flex; align-items: center; gap: 8px;
+    border-bottom: 1px solid var(--border);
+    transition: all 0.3s;
+    flex-shrink: 0;
+  }
+  .mode-banner.consultation { background: rgba(88,166,255,0.06); color: var(--blue); }
+  .mode-banner.action       { background: rgba(240,136,62,0.06); color: var(--orange); }
+  .banner-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+  /* Messages */
+  .messages {
+    flex: 1; overflow-y: auto; padding: 24px 28px;
+    display: flex; flex-direction: column; gap: 20px;
+    scroll-behavior: smooth;
+  }
+  .messages::-webkit-scrollbar { width: 4px; }
+  .messages::-webkit-scrollbar-track { background: transparent; }
+  .messages::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+
+  /* Message rows */
+  .msg-row { display: flex; gap: 12px; animation: msgIn 0.3s ease both; }
+  .msg-row.user { flex-direction: row-reverse; }
+
+  @keyframes msgIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .msg-avatar {
+    width: 30px; height: 30px; border-radius: 50%;
+    flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600; margin-top: 2px;
+  }
+  .msg-avatar.bot { background: linear-gradient(135deg, #D4A843, #A67C2E); font-size: 14px; }
+  .msg-avatar.user { background: var(--surface3); color: var(--text); font-size: 11px; border: 1px solid var(--border2); }
+
+  .msg-content { max-width: 72%; display: flex; flex-direction: column; gap: 4px; }
+  .msg-row.user .msg-content { align-items: flex-end; }
+
+  .msg-meta { font-size: 10px; color: var(--muted); padding: 0 4px; font-family: var(--font-m); }
+
+  .bubble {
+    padding: 12px 16px;
+    border-radius: 14px;
+    font-size: 13.5px; line-height: 1.65;
+    position: relative;
+  }
+  .bubble.bot {
+    background: var(--surface); border: 1px solid var(--border);
+    border-top-left-radius: 4px;
+    color: var(--text);
+  }
+  .bubble.user {
+    background: rgba(212,168,67,0.14); border: 1px solid rgba(212,168,67,0.25);
+    border-top-right-radius: 4px;
+    color: var(--text);
+  }
+  .bubble strong { color: var(--accent); font-weight: 600; }
+
+  /* Mode tag inside bubble */
+  .mode-tag {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px;
+    margin-bottom: 8px; font-family: var(--font-m); letter-spacing: 0.04em;
+  }
+  .mode-tag.consultation { background: rgba(88,166,255,0.14); color: var(--blue); }
+  .mode-tag.action       { background: rgba(240,136,62,0.14); color: var(--orange); }
+  .mode-tag-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+
+  /* SQL block */
+  .sql-block {
+    background: var(--bg); border: 1px solid var(--border2);
+    border-radius: 8px; padding: 12px 14px; margin-top: 10px;
+    font-family: var(--font-m); font-size: 11.5px; color: #79C0FF;
+    line-height: 1.7; overflow-x: auto;
+  }
+  .sql-block .kw  { color: #FF7B72; }
+  .sql-block .fn  { color: #D2A8FF; }
+  .sql-block .str { color: #A5D6FF; }
+  .sql-block .num { color: #F2CC60; }
+  .sql-block .cmt { color: var(--muted); font-style: italic; }
+
+  /* Result table */
+  .result-table {
+    margin-top: 10px; border-radius: 8px; overflow: hidden;
+    border: 1px solid var(--border2); width: 100%;
+  }
+  .result-table table { width: 100%; border-collapse: collapse; }
+  .result-table thead tr { background: var(--surface2); }
+  .result-table th { text-align: left; padding: 7px 12px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); font-weight: 500; }
+  .result-table td { padding: 7px 12px; font-size: 12px; font-family: var(--font-m); border-top: 1px solid var(--border); }
+  .result-table tr:hover td { background: var(--surface2); }
+  .val-green { color: var(--green); }
+  .val-red   { color: var(--red); }
+  .val-amber { color: var(--accent); }
+
+  /* Confirm card */
+  .confirm-card {
+    margin-top: 12px; background: rgba(240,136,62,0.07);
+    border: 1px solid rgba(240,136,62,0.25); border-radius: 12px;
+    padding: 16px;
+  }
+  .confirm-title {
+    font-family: var(--font-h); font-size: 13px; font-weight: 700;
+    color: var(--orange); margin-bottom: 10px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .confirm-rows { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+  .confirm-row { display: flex; justify-content: space-between; font-size: 12px; }
+  .confirm-key { color: var(--muted); }
+  .confirm-val { color: var(--text); font-family: var(--font-m); font-weight: 500; }
+  .confirm-btns { display: flex; gap: 8px; }
+  .btn-confirm {
+    flex: 1; padding: 9px; border-radius: 8px; border: none;
+    font-family: var(--font-h); font-size: 13px; font-weight: 700;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .btn-confirm.yes { background: var(--orange); color: #F5F0E8; }
+  .btn-confirm.yes:hover { background: #F09A50; transform: translateY(-1px); }
+  .btn-confirm.no  { background: var(--surface3); color: var(--muted); border: 1px solid var(--border2); }
+  .btn-confirm.no:hover  { color: var(--text); background: var(--surface2); }
+
+  /* Confirmed state */
+  .confirmed-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 14px; border-radius: 8px; margin-top: 10px;
+    background: rgba(63,185,80,0.1); border: 1px solid rgba(63,185,80,0.25);
+    font-size: 12px; color: var(--green); font-weight: 500;
+  }
+
+  /* Suggestions */
+  .suggestions {
+    display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px;
+  }
+  .sug {
+    padding: 6px 12px; border-radius: 20px; font-size: 11.5px;
+    background: var(--surface2); border: 1px solid var(--border2);
+    color: var(--muted); cursor: pointer; transition: all 0.15s;
+    font-family: var(--font-b);
+  }
+  .sug:hover { background: var(--surface3); color: var(--text); border-color: var(--border2); }
+
+  /* Typing indicator */
+  .typing { display: flex; gap: 4px; align-items: center; padding: 14px 16px; }
+  .typing span {
+    width: 7px; height: 7px; border-radius: 50%; background: var(--muted);
+    animation: blink 1.2s infinite;
+  }
+  .typing span:nth-child(2) { animation-delay: 0.2s; }
+  .typing span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes blink {
+    0%, 80%, 100% { opacity: 0.2; transform: scale(0.85); }
+    40%           { opacity: 1;   transform: scale(1); }
+  }
+
+  /* ── Chips raccourcis (conformes cahier charges prof) ── */
+  .chip-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 6px 13px; border-radius: 20px; font-size: 12px;
+    font-family: var(--font-b); font-weight: 500; cursor: pointer;
+    background: var(--surface2); border: 1px solid var(--border2);
+    color: var(--muted); transition: all 0.15s;
+  }
+  .chip-btn:hover { background: var(--surface3); color: var(--text); border-color: var(--bord2); transform: translateY(-1px); }
+  .chip-btn.chip-warn   { color: var(--orange); background: rgba(240,136,62,0.07); border-color: rgba(240,136,62,0.2); }
+  .chip-btn.chip-warn:hover { background: rgba(240,136,62,0.15); }
+  .chip-btn.chip-blue   { color: var(--blue);   background: rgba(88,166,255,0.07); border-color: rgba(88,166,255,0.2); }
+  .chip-btn.chip-blue:hover { background: rgba(88,166,255,0.15); }
+  .chip-btn.chip-action { color: var(--green);  background: rgba(63,185,80,0.07);  border-color: rgba(63,185,80,0.2); }
+  .chip-btn.chip-action:hover { background: rgba(63,185,80,0.15); }
+  .chip-btn.chip-amber  { color: var(--accent); background: rgba(212,168,67,0.07); border-color: rgba(212,168,67,0.2); }
+  .chip-btn.chip-amber:hover { background: rgba(212,168,67,0.15); }
+  .chip-btn.chip-purple { color: var(--purple); background: rgba(188,140,255,0.07);border-color: rgba(188,140,255,0.2); }
+  .chip-btn.chip-purple:hover { background: rgba(188,140,255,0.15); }
+
+
+    border-top: 1px solid var(--border);
+    padding: 16px 28px 20px;
+    background: var(--bg);
+    flex-shrink: 0;
+  }
+  .input-wrap {
+    display: flex; align-items: flex-end; gap: 10px;
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 14px; padding: 10px 12px;
+    transition: border-color 0.2s;
+  }
+  .input-wrap:focus-within { border-color: rgba(212,168,67,0.5); }
+  .input-wrap.mode-action { border-color: rgba(240,136,62,0.35); }
+  textarea {
+    flex: 1; background: none; border: none; outline: none;
+    color: var(--text); font-family: var(--font-b); font-size: 13.5px;
+    resize: none; line-height: 1.5; max-height: 120px;
+    overflow-y: auto; padding: 2px 0;
+  }
+  textarea::placeholder { color: var(--muted); }
+  .input-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .input-hint { font-size: 11px; color: var(--muted); padding-bottom: 2px; }
+  .btn-send {
+    width: 36px; height: 36px; border-radius: 10px; border: none;
+    background: var(--accent); color: #F5F0E8;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.15s; flex-shrink: 0;
+  }
+  .btn-send:hover { background: #E6BA5A; transform: translateY(-1px); }
+  .btn-send.action-mode { background: var(--orange); }
+  .btn-send.action-mode:hover { background: #F29950; }
+
+  /* Right panel */
+  .right-panel {
+    width: 300px; flex-shrink: 0;
+    border-left: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    background: var(--surface);
+    overflow: hidden;
+  }
+  .rp-header {
+    padding: 16px 18px; border-bottom: 1px solid var(--border);
+    font-family: var(--font-h); font-size: 13px; font-weight: 700;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .rp-section { padding: 14px 18px; border-bottom: 1px solid var(--border); }
+  .rp-section-title { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); font-weight: 500; margin-bottom: 10px; }
+  .quick-btn {
+    display: flex; align-items: center; gap: 8px;
+    padding: 9px 12px; border-radius: 8px;
+    background: var(--surface2); border: 1px solid var(--border);
+    cursor: pointer; margin-bottom: 6px; width: 100%;
+    font-family: var(--font-b); font-size: 12px; color: var(--text);
+    transition: all 0.15s; text-align: left;
+  }
+  .quick-btn:hover { background: var(--surface3); border-color: var(--border2); }
+  .quick-btn.qb-consult .qb-dot { background: var(--blue); }
+  .quick-btn.qb-action  .qb-dot { background: var(--orange); }
+  .qb-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .qb-label { flex: 1; }
+  .qb-mode { font-size: 10px; color: var(--muted); font-family: var(--font-m); }
+
+  .history-item {
+    display: flex; flex-direction: column; gap: 3px;
+    padding: 9px 0; border-bottom: 1px solid var(--border); cursor: pointer;
+    transition: all 0.15s;
+  }
+  .history-item:last-child { border-bottom: none; }
+  .history-item:hover .hi-text { color: var(--text); }
+  .hi-label { font-size: 11px; font-weight: 500; color: var(--text); }
+  .hi-text  { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hi-time  { font-size: 10px; color: var(--muted); font-family: var(--font-m); }
+
+  .stat-mini { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--border); }
+  .stat-mini:last-child { border-bottom: none; }
+  .sm-label { font-size: 12px; color: var(--muted); }
+  .sm-val   { font-size: 13px; font-weight: 600; font-family: var(--font-m); }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">
+        <div class="logo-icon">
+          <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+            <path d="M3 14c0-2.5 1.5-4.5 4-5.5M13 8.5c2.5 1 4 3 4 5.5M10 4a2 2 0 100 4 2 2 0 000-4z" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/>
+            <path d="M5 16.5c0-2.8 2.24-5 5-5s5 2.2 5 5" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <span class="logo-name">BoviBot</span>
+      </div>
+      <div class="logo-tagline">Gestion intelligente</div>
+    </div>
+    <nav class="sidebar-nav">
+      <span class="nav-label">Principal</span>
+      <div class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>
+        Tableau de bord
+      </div>
+      <div class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="6" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>
+        Troupeau
+      </div>
+      <div class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 4h12M2 8h8M2 12h5"/></svg>
+        Pesées
+      </div>
+      <div class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="6"/><path d="M8 5v3.5l2 2"/></svg>
+        Gestations
+      </div>
+      <span class="nav-label">Suivi</span>
+      <div class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 2v2M8 12v2M2 8h2M12 8h2"/><circle cx="8" cy="8" r="3"/></svg>
+        Alertes
+        <span class="nav-badge">3</span>
+      </div>
+      <div class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 12l4-4 3 3 5-6"/></svg>
+        Croissance (GMQ)
+      </div>
+      <div class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 8h6M5 5h6M5 11h3"/></svg>
+        Ventes
+      </div>
+      <span class="nav-label">IA</span>
+      <div class="nav-item active">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 12V5a2 2 0 012-2h8a2 2 0 012 2v5a2 2 0 01-2 2H9l-3 2v-2H4a2 2 0 01-2-2z"/></svg>
+        Chat BoviBot
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="farm-selector">
+        <div class="farm-avatar">FD</div>
+        <div>
+          <p class="farm-name">Ferme Diallo</p>
+          <p class="farm-sub">Thiès · 47 bovins</p>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── CHAT AREA ── -->
+  <div class="chat-area">
+
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="bot-avatar">
+          🐄
+          <div class="bot-online"></div>
+        </div>
+        <div>
+          <div class="topbar-title">BoviBot IA</div>
+          <div class="topbar-sub" id="bot-status">En ligne · prêt à répondre</div>
+        </div>
+      </div>
+      <div class="mode-toggle">
+        <button class="mode-btn consultation active" id="btn-consult" onclick="setMode('consultation')">
+          <span class="mode-dot"></span>
+          Consultation
+        </button>
+        <button class="mode-btn action" id="btn-action" onclick="setMode('action')">
+          <span class="mode-dot"></span>
+          Action
+        </button>
+      </div>
+    </div>
+
+    <!-- Mode banner -->
+    <div class="mode-banner consultation" id="mode-banner">
+      <span class="banner-dot"></span>
+      <span id="banner-text">Mode Consultation — Posez vos questions, BoviBot interroge la base de données et vous répond.</span>
+    </div>
+
+    <!-- Chips raccourcis — conformes cahier des charges prof -->
+    <div style="display:flex;flex-wrap:wrap;gap:7px;padding:12px 28px 0;border-bottom:1px solid var(--border);background:var(--bg);padding-bottom:12px;flex-shrink:0;" id="chips-bar">
+      <span style="font-size:10px;color:var(--muted);align-self:center;text-transform:uppercase;letter-spacing:0.08em;margin-right:4px">Accès rapide</span>
+      <button class="chip-btn" onclick="sendSuggestion('Affiche le troupeau complet avec statuts')">🐄 Troupeau complet</button>
+      <button class="chip-btn chip-warn" onclick="sendSuggestion('Quels bovins ont un GMQ inférieur à 500 g/j ?')">📉 GMQ faibles</button>
+      <button class="chip-btn chip-blue" onclick="sendSuggestion('Affiche les gestations en cours et leur avancement')">🤰 Gestations</button>
+      <button class="chip-btn chip-blue" onclick="sendSuggestion('Quels bovins ont un RDV vaccination à venir ou en retard ?')">💉 Vaccinations</button>
+      <button class="chip-btn chip-action" onclick="setMode('action');sendSuggestion('Je veux saisir une pesée')">⚖️ Saisir pesée</button>
+      <button class="chip-btn chip-amber" onclick="sendSuggestion('Quel est le coût alimentaire total ce mois ?')">🌾 Coût alim.</button>
+      <button class="chip-btn chip-purple" onclick="setMode('action');sendSuggestion('Je veux déclarer une vente')">🏷️ Déclarer vente</button>
+    </div>
+
+    <!-- Messages -->
+    <div class="messages" id="messages">
+
+      <!-- Message 1 : accueil bot -->
+      <div class="msg-row">
+        <div class="msg-avatar bot">🐄</div>
+        <div class="msg-content">
+          <div class="msg-meta">BoviBot · 08:40</div>
+          <div class="bubble bot">
+            Bonjour <strong>Mouhamadou</strong> ! Je suis BoviBot, votre assistant IA pour la gestion du troupeau de la Ferme Diallo.<br><br>
+            Je peux répondre à vos questions sur le troupeau (<span style="color:var(--blue)">mode Consultation</span>) ou enregistrer des pesées et déclarer des ventes (<span style="color:var(--orange)">mode Action</span>).
+            <div class="suggestions">
+              <span class="sug" onclick="sendSuggestion('Quels bovins ont un GMQ inférieur à 500 g/j ?')">GMQ &lt; 500 g/j ?</span>
+              <span class="sug" onclick="sendSuggestion('Montre-moi les alertes actives')">Alertes actives</span>
+              <span class="sug" onclick="sendSuggestion('Quel est l\'âge moyen du troupeau ?')">Âge moyen</span>
+              <span class="sug" onclick="sendSuggestion('Enregistre une pesée pour BV-014')">Enregistrer pesée</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Message 2 : user question -->
+      <div class="msg-row user">
+        <div class="msg-avatar user">MM</div>
+        <div class="msg-content">
+          <div class="msg-meta" style="text-align:right">Mouhamadou · 08:42</div>
+          <div class="bubble user">Quels bovins ont un GMQ inférieur à 500 g/j cette semaine ?</div>
+        </div>
+      </div>
+
+      <!-- Message 3 : bot SQL response -->
+      <div class="msg-row">
+        <div class="msg-avatar bot">🐄</div>
+        <div class="msg-content">
+          <div class="msg-meta">BoviBot · 08:42</div>
+          <div class="bubble bot">
+            <div class="mode-tag consultation"><span class="mode-tag-dot"></span>CONSULTATION</div>
+            J'ai interrogé la base de données avec la fonction <strong>fn_gmq()</strong>. Voici les bovins dont le gain moyen quotidien est inférieur à 500 g/j cette semaine :
+            <div class="sql-block">
+              <span class="kw">SELECT</span> b.id, b.nom, <span class="fn">fn_gmq</span>(b.id, <span class="num">7</span>) <span class="kw">AS</span> gmq_semaine<br>
+              <span class="kw">FROM</span> bovins b<br>
+              <span class="kw">WHERE</span> <span class="fn">fn_gmq</span>(b.id, <span class="num">7</span>) &lt; <span class="num">500</span><br>
+              &nbsp;&nbsp;<span class="kw">AND</span> b.statut = <span class="str">'actif'</span><br>
+              <span class="kw">ORDER BY</span> gmq_semaine <span class="kw">ASC</span>;<br>
+              <span class="cmt">-- 3 résultats trouvés</span>
+            </div>
+            <div class="result-table">
+              <table>
+                <thead><tr><th>ID</th><th>Nom</th><th>GMQ (g/j)</th><th>Âge</th></tr></thead>
+                <tbody>
+                  <tr><td style="font-family:var(--font-m);color:var(--accent)">BV-014</td><td>Kebbe</td><td class="val-red">210</td><td>4 mois</td></tr>
+                  <tr><td style="font-family:var(--font-m);color:var(--accent)">BV-031</td><td>Thioro</td><td class="val-amber">380</td><td>7 mois</td></tr>
+                  <tr><td style="font-family:var(--font-m);color:var(--accent)">BV-038</td><td>Marème</td><td class="val-amber">450</td><td>3 mois</td></tr>
+                </tbody>
+              </table>
+            </div>
+            ⚠️ <strong>BV-014 (Kebbe)</strong> est particulièrement préoccupant avec seulement <span style="color:var(--red)">210 g/j</span>. Une pesée de contrôle est recommandée.
+          </div>
+        </div>
+      </div>
+
+      <!-- Message 4 : user switch to action -->
+      <div class="msg-row user">
+        <div class="msg-avatar user">MM</div>
+        <div class="msg-content">
+          <div class="msg-meta" style="text-align:right">Mouhamadou · 08:45</div>
+          <div class="bubble user">Enregistre une pesée pour BV-014, il pèse 58 kg aujourd'hui.</div>
+        </div>
+      </div>
+
+      <!-- Message 5 : bot action confirmation -->
+      <div class="msg-row">
+        <div class="msg-avatar bot">🐄</div>
+        <div class="msg-content">
+          <div class="msg-meta">BoviBot · 08:45</div>
+          <div class="bubble bot">
+            <div class="mode-tag action"><span class="mode-tag-dot"></span>ACTION</div>
+            Je vais appeler la procédure <strong>sp_enregistrer_pesee()</strong>. Veuillez confirmer avant que j'écrive en base de données :
+            <div class="confirm-card">
+              <div class="confirm-title">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M7 2v5l3 3"/><circle cx="7" cy="7" r="5.5"/></svg>
+                Confirmation requise
+              </div>
+              <div class="confirm-rows">
+                <div class="confirm-row"><span class="confirm-key">Procédure</span><span class="confirm-val">sp_enregistrer_pesee</span></div>
+                <div class="confirm-row"><span class="confirm-key">Bovin</span><span class="confirm-val">BV-014 · Kebbe</span></div>
+                <div class="confirm-row"><span class="confirm-key">Poids enregistré</span><span class="confirm-val" style="color:var(--orange)">58 kg</span></div>
+                <div class="confirm-row"><span class="confirm-key">Date</span><span class="confirm-val">Aujourd'hui · 08:45</span></div>
+                <div class="confirm-row"><span class="confirm-key">Agent</span><span class="confirm-val">Mouhamadou M. Gueye</span></div>
+              </div>
+              <div class="confirm-btns">
+                <button class="btn-confirm yes" onclick="confirmAction()">✓ Confirmer</button>
+                <button class="btn-confirm no"  onclick="cancelAction()">✕ Annuler</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Message 6 : confirmed -->
+      <div class="msg-row" id="msg-confirmed" style="display:none">
+        <div class="msg-avatar bot">🐄</div>
+        <div class="msg-content">
+          <div class="msg-meta">BoviBot · 08:46</div>
+          <div class="bubble bot">
+            <div class="mode-tag action"><span class="mode-tag-dot"></span>ACTION</div>
+            <div class="confirmed-badge">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 7l3.5 3.5 5.5-6"/></svg>
+              Pesée enregistrée avec succès
+            </div>
+            <br>
+            La procédure <strong>sp_enregistrer_pesee</strong> s'est exécutée sans erreur. Le poids de <strong>BV-014 (Kebbe)</strong> est maintenant à <span style="color:var(--orange)">58 kg</span>.<br><br>
+            ⚠️ Le trigger <strong>trg_alerte_poids</strong> s'est déclenché : le poids reste sous le seuil de <strong>60 kg</strong>. L'alerte est maintenue dans le tableau de bord.
+            <div class="suggestions" style="margin-top:12px">
+              <span class="sug" onclick="sendSuggestion('Voir l\'historique des pesées de BV-014')">Historique BV-014</span>
+              <span class="sug" onclick="sendSuggestion('Quand est le prochain RDV vaccination ?')">RDV vaccination</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Typing indicator (hidden by default) -->
+      <div class="msg-row" id="typing-row" style="display:none">
+        <div class="msg-avatar bot">🐄</div>
+        <div class="msg-content">
+          <div class="bubble bot" style="padding:0">
+            <div class="typing"><span></span><span></span><span></span></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end messages -->
+
+    <!-- Input -->
+    <div class="input-area">
+      <div class="input-wrap" id="input-wrap">
+        <textarea id="chat-input" rows="1" placeholder="Posez une question sur votre troupeau…" oninput="autoResize(this)" onkeydown="handleKey(event)"></textarea>
+        <div class="input-actions">
+          <span class="input-hint" id="input-hint">↵ Envoyer</span>
+          <button class="btn-send" id="btn-send" onclick="sendMessage()">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 8H2M14 8l-5-5M14 8l-5 5"/></svg>
+          </button>
+        </div>
+      </div>
+      <div style="margin-top:8px;font-size:11px;color:var(--muted);text-align:center">
+        BoviBot peut faire des erreurs. Toujours confirmer les actions avant exécution.
+      </div>
+    </div>
+
+  </div><!-- end chat-area -->
+
+  <!-- ── RIGHT PANEL ── -->
+  <div class="right-panel">
+    <div class="rp-header">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="var(--accent)" stroke-width="1.6" stroke-linecap="round"><circle cx="7" cy="7" r="5.5"/><path d="M7 4v3.5l2 2"/></svg>
+      Contexte & Raccourcis
+    </div>
+
+    <!-- Quick questions -->
+    <div class="rp-section">
+      <div class="rp-section-title">Questions rapides</div>
+      <button class="quick-btn qb-consult" onclick="sendSuggestion('Quels bovins ont plus de 12 mois ?')">
+        <span class="qb-dot"></span>
+        <span class="qb-label">Bovins &gt; 12 mois</span>
+        <span class="qb-mode">consulte</span>
+      </button>
+      <button class="quick-btn qb-consult" onclick="sendSuggestion('Affiche les gestations proches du terme')">
+        <span class="qb-dot"></span>
+        <span class="qb-label">Gestations terme</span>
+        <span class="qb-mode">consulte</span>
+      </button>
+      <button class="quick-btn qb-consult" onclick="sendSuggestion('Quel est le poids moyen par race ?')">
+        <span class="qb-dot"></span>
+        <span class="qb-label">Poids moyen / race</span>
+        <span class="qb-mode">consulte</span>
+      </button>
+      <button class="quick-btn qb-action" onclick="sendSuggestion('Déclare la vente du bovin BV-021')">
+        <span class="qb-dot"></span>
+        <span class="qb-label">Déclarer une vente</span>
+        <span class="qb-mode">action</span>
+      </button>
+    </div>
+
+    <!-- Troupeau stats -->
+    <div class="rp-section">
+      <div class="rp-section-title">Troupeau actuel</div>
+      <div class="stat-mini"><span class="sm-label">Bovins actifs</span><span class="sm-val" style="color:var(--green)">47</span></div>
+      <div class="stat-mini"><span class="sm-label">Poids moyen</span><span class="sm-val" style="color:var(--accent)">324 kg</span></div>
+      <div class="stat-mini"><span class="sm-label">En gestation</span><span class="sm-val" style="color:var(--blue)">8</span></div>
+      <div class="stat-mini"><span class="sm-label">Alertes actives</span><span class="sm-val" style="color:var(--red)">3</span></div>
+      <div class="stat-mini"><span class="sm-label">GMQ moyen</span><span class="sm-val">680 g/j</span></div>
+    </div>
+
+    <!-- Historique conversations -->
+    <div class="rp-section" style="flex:1;overflow-y:auto;border-bottom:none">
+      <div class="rp-section-title">Conversations récentes</div>
+      <div class="history-item">
+        <span class="hi-label">Alertes sous-poids</span>
+        <span class="hi-text">Quels bovins ont un GMQ inférieur à…</span>
+        <span class="hi-time">Aujourd'hui · 08:42</span>
+      </div>
+      <div class="history-item">
+        <span class="hi-label">Pesée BV-031</span>
+        <span class="hi-text">Enregistre une pesée pour BV-031…</span>
+        <span class="hi-time">Hier · 16:10</span>
+      </div>
+      <div class="history-item">
+        <span class="hi-label">Rapport mensuel juin</span>
+        <span class="hi-text">Donne-moi les statistiques du mois…</span>
+        <span class="hi-time">01 juil. · 09:00</span>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end layout -->
+
+<script>
+  let currentMode = 'consultation';
+
+  function setMode(mode) {
+    currentMode = mode;
+    const banner = document.getElementById('mode-banner');
+    const bannerText = document.getElementById('banner-text');
+    const btnC = document.getElementById('btn-consult');
+    const btnA = document.getElementById('btn-action');
+    const wrap = document.getElementById('input-wrap');
+    const sendBtn = document.getElementById('btn-send');
+    const input = document.getElementById('chat-input');
+
+    btnC.classList.toggle('active', mode === 'consultation');
+    btnA.classList.toggle('active', mode === 'action');
+    banner.className = 'mode-banner ' + mode;
+    wrap.classList.toggle('mode-action', mode === 'action');
+    sendBtn.classList.toggle('action-mode', mode === 'action');
+
+    if (mode === 'consultation') {
+      bannerText.textContent = 'Mode Consultation — Posez vos questions, BoviBot interroge la base de données et vous répond.';
+      input.placeholder = 'Posez une question sur votre troupeau…';
+    } else {
+      bannerText.textContent = 'Mode Action — BoviBot peut enregistrer des pesées et déclarer des ventes. Confirmation obligatoire.';
+      input.placeholder = 'Ex : Enregistre une pesée pour BV-014, il pèse 62 kg…';
+    }
+  }
+
+  function confirmAction() {
+    document.getElementById('msg-confirmed').style.display = 'flex';
+    document.getElementById('msg-confirmed').style.animation = 'msgIn 0.3s ease both';
+    scrollToBottom();
+    // Hide confirm buttons
+    document.querySelectorAll('.confirm-btns').forEach(b => b.style.display = 'none');
+  }
+
+  function cancelAction() {
+    document.querySelectorAll('.confirm-btns').forEach(b => b.style.display = 'none');
+    const msg = document.createElement('div');
+    msg.className = 'msg-row';
+    msg.innerHTML = `
+      <div class="msg-avatar bot">🐄</div>
+      <div class="msg-content">
+        <div class="msg-meta">BoviBot · maintenant</div>
+        <div class="bubble bot">Action annulée. Aucune modification n'a été enregistrée en base de données.</div>
+      </div>`;
+    document.getElementById('messages').appendChild(msg);
+    scrollToBottom();
+  }
+
+  function sendSuggestion(text) {
+    document.getElementById('chat-input').value = text;
+    sendMessage();
+  }
+
+  const BASE_URL = "https://web-production-8a06a5.up.railway.app";
+
+  async function sendMessage() {
+    const input = document.getElementById('chat-input');
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+    autoResize(input);
+
+    // Ajouter message utilisateur
+    const msgs = document.getElementById('messages');
+    const userRow = document.createElement('div');
+    userRow.className = 'msg-row user';
+    userRow.innerHTML = `
+      <div class="msg-avatar user">MM</div>
+      <div class="msg-content">
+        <div class="msg-meta" style="text-align:right">Mouhamadou · maintenant</div>
+        <div class="bubble user">${escHtml(text)}</div>
+      </div>`;
+    msgs.appendChild(userRow);
+
+    document.getElementById('typing-row').style.display = 'flex';
+    scrollToBottom();
+
+    try {
+      const res = await fetch(BASE_URL + '/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text, mode: currentMode })
+      });
+      document.getElementById('typing-row').style.display = 'none';
+      const data = await res.json();
+      const reponse = data.reponse || data.response || data.message || JSON.stringify(data);
+      const modeTag = currentMode === 'action'
+        ? `<div class="mode-tag action"><span class="mode-tag-dot"></span>ACTION</div>`
+        : `<div class="mode-tag consultation"><span class="mode-tag-dot"></span>CONSULTATION</div>`;
+      const botRow = document.createElement('div');
+      botRow.className = 'msg-row';
+      botRow.innerHTML = `
+        <div class="msg-avatar bot">🐄</div>
+        <div class="msg-content">
+          <div class="msg-meta">BoviBot · maintenant</div>
+          <div class="bubble bot">${modeTag}${reponse}</div>
+        </div>`;
+      msgs.appendChild(botRow);
+
+      // Confirmation si action SQL détectée
+      if (data.sql && data.requires_confirmation) {
+        const confRow = document.createElement('div');
+        confRow.className = 'msg-row';
+        confRow.innerHTML = `
+          <div class="msg-avatar bot">🐄</div>
+          <div class="msg-content">
+            <div class="bubble bot" style="border:1px solid var(--warning);background:rgba(230,81,0,.06)">
+              <strong>⚠️ Confirmer l'action ?</strong><br>
+              <code style="font-size:11px;color:var(--muted)">${escHtml(data.sql)}</code><br><br>
+              <button onclick="confirmerAction('${escHtml(data.sql)}')" style="background:var(--warning);color:#fff;border:none;border-radius:6px;padding:6px 14px;cursor:pointer;font-weight:600">✓ Confirmer</button>
+              <button onclick="this.parentElement.parentElement.parentElement.remove()" style="background:var(--surface2);color:var(--muted);border:none;border-radius:6px;padding:6px 14px;cursor:pointer;margin-left:8px">Annuler</button>
+            </div>
+          </div>`;
+        msgs.appendChild(confRow);
+      }
+    } catch(e) {
+      document.getElementById('typing-row').style.display = 'none';
+      const errRow = document.createElement('div');
+      errRow.className = 'msg-row';
+      errRow.innerHTML = `
+        <div class="msg-avatar bot">🐄</div>
+        <div class="msg-content">
+          <div class="bubble bot" style="color:var(--danger)">⚠️ Impossible de joindre le backend. Vérifiez que le serveur Railway est actif.</div>
+        </div>`;
+      msgs.appendChild(errRow);
+    }
+    scrollToBottom();
+  }
+
+  async function confirmerAction(sql) {
+    try {
+      const res = await fetch(BASE_URL + '/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: sql, mode: 'action', confirmed: true })
+      });
+      const data = await res.json();
+      alert('✅ Action exécutée : ' + (data.reponse || 'Succès'));
+    } catch(e) { alert('❌ Erreur lors de l\'exécution'); }
+  }
+
+  function handleKey(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  }
+
+  function autoResize(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+  }
+
+  function scrollToBottom() {
+    const msgs = document.getElementById('messages');
+    setTimeout(() => msgs.scrollTo({ top: msgs.scrollHeight, behavior: 'smooth' }), 50);
+  }
+
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+</script>
+</body>
+</html>
