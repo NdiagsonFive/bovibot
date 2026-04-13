@@ -3,240 +3,463 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BoviBot — Assistant IA Élevage Bovin</title>
+<title>BoviBot — Tableau de bord</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Segoe UI', sans-serif; background: #f5f0e8; color: #1a202c; }
-  header { background: #7c4f1e; color: white; padding: 1rem 2rem; display: flex; align-items: center; gap: 1rem; }
-  header h1 { font-size: 1.4rem; }
-  .container { display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem; padding: 1.5rem; max-width: 1400px; margin: 0 auto; }
-  .card { background: white; border-radius: 12px; padding: 1.2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 1rem; }
-  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
-  .stat { background: #fdf6ec; border-radius: 8px; padding: 0.8rem; text-align: center; }
-  .stat .val { font-size: 1.8rem; font-weight: bold; color: #7c4f1e; }
-  .stat .lbl { font-size: 0.75rem; color: #64748b; }
-  .stat.critical .val { color: #dc2626; }
-  .chat-box { height: 380px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; background: #fafaf8; }
-  .msg { margin-bottom: 0.8rem; }
-  .msg.user .bubble { background: #7c4f1e; color: white; margin-left: auto; }
-  .msg.bot .bubble { background: white; border: 1px solid #e2e8f0; }
-  .msg.confirm .bubble { background: #fef9c3; border: 2px solid #f59e0b; }
-  .bubble { display: inline-block; padding: 0.6rem 1rem; border-radius: 12px; max-width: 85%; font-size: 0.9rem; line-height: 1.5; }
-  .msg.user { text-align: right; }
-  .confirm-btns { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
-  .btn-oui { background: #16a34a; color: white; border: none; border-radius: 6px; padding: 0.4rem 1rem; cursor: pointer; font-size: 0.9rem; }
-  .btn-non { background: #dc2626; color: white; border: none; border-radius: 6px; padding: 0.4rem 1rem; cursor: pointer; font-size: 0.9rem; }
-  .chat-input { display: flex; gap: 0.5rem; }
-  .chat-input input { flex: 1; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.7rem 1rem; font-size: 0.95rem; outline: none; }
-  .chat-input input:focus { border-color: #7c4f1e; }
-  .chat-input button { background: #7c4f1e; color: white; border: none; border-radius: 8px; padding: 0.7rem 1.2rem; cursor: pointer; }
-  .suggestions { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.8rem; }
-  .suggestions button { background: #fdf6ec; color: #7c4f1e; border: 1px solid #d4a76a; border-radius: 20px; padding: 0.3rem 0.8rem; font-size: 0.78rem; cursor: pointer; }
-  .suggestions button:hover { background: #fde9c9; }
-  .sql-preview { background: #1e293b; color: #94a3b8; font-family: monospace; font-size: 0.75rem; padding: 0.5rem; border-radius: 6px; margin-top: 0.4rem; white-space: pre-wrap; }
-  .results table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
-  .results th { background: #7c4f1e; color: white; padding: 0.5rem; text-align: left; }
-  .results td { padding: 0.45rem 0.5rem; border-bottom: 1px solid #e2e8f0; }
-  .results tr:hover td { background: #fdf6ec; }
-  h2 { font-size: 1rem; color: #374151; margin-bottom: 0.8rem; }
-  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.72rem; font-weight: 600; }
-  .badge-green { background: #dcfce7; color: #166534; }
-  .badge-orange { background: #fff7ed; color: #9a3412; }
-  .badge-red { background: #fee2e2; color: #991b1b; }
-  .alerte-item { padding: 0.5rem 0.8rem; border-radius: 6px; margin-bottom: 0.4rem; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; }
-  .alerte-critical { background: #fee2e2; border-left: 4px solid #dc2626; }
-  .alerte-warning  { background: #fff7ed; border-left: 4px solid #f59e0b; }
-  .alerte-info     { background: #eff6ff; border-left: 4px solid #3b82f6; }
-  .alerte-item button { background: none; border: none; cursor: pointer; font-size: 1rem; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#F5F0E8;--surf:#FDFAF4;--surf2:#EDE8DC;--surf3:#E4DDD0;--brd:rgba(160,140,110,0.18);--brd2:rgba(160,140,110,0.32);--tx:#2C2416;--mu:#8C7B5E;--ac:#B8860B;--gn:#2E7D32;--rd:#C62828;--or:#E65100;--bl:#1565C0;--pu:#6A1B9A;--te:#00695C;--fh:'Syne',sans-serif;--fb:'DM Sans',sans-serif;--fm:'DM Mono',monospace}
+html,body{background:var(--bg);color:var(--tx);font-family:var(--fb);font-size:14px;min-height:100vh;line-height:1.5}
+.layout{display:flex;min-height:100vh}
+.sidebar{width:220px;flex-shrink:0;background:var(--surf);border-right:1px solid var(--brd);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow:hidden}
+.s-logo{padding:22px 20px 18px;border-bottom:1px solid var(--brd)}
+.logo-row{display:flex;align-items:center;gap:10px}
+.logo-ico{width:32px;height:32px;background:var(--ac);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo-nm{font-family:var(--fh);font-size:17px;font-weight:800;letter-spacing:-.03em}
+.logo-tg{font-size:10px;color:var(--mu);letter-spacing:.08em;text-transform:uppercase;margin-top:3px;padding-left:42px}
+.s-nav{flex:1;padding:14px 12px;display:flex;flex-direction:column;gap:2px;overflow-y:auto}
+.nl{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--mu);padding:10px 8px 5px}
+.ni{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;color:var(--mu);font-size:13px;transition:all .15s;text-decoration:none}
+.ni:hover{background:var(--surf2);color:var(--tx)}
+.ni.on{background:rgba(212,168,67,.12);color:var(--ac);font-weight:500}
+.ni svg{width:15px;height:15px;flex-shrink:0}
+.nbadge{margin-left:auto;background:var(--rd);color:#fff;font-size:10px;font-weight:600;padding:1px 6px;border-radius:20px;font-family:var(--fm)}
+.s-foot{padding:14px 12px;border-top:1px solid var(--brd)}
+.farm{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;background:var(--surf2)}
+.farm-av{width:26px;height:26px;border-radius:6px;background:linear-gradient(135deg,#D4A843,#A67C2E);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0}
+.farm-nm{font-size:12px;font-weight:500}.farm-sb{font-size:10px;color:var(--mu)}
+.main{flex:1;overflow-y:auto;display:flex;flex-direction:column}
+.topbar{position:sticky;top:0;z-index:10;background:rgba(245,240,232,.93);backdrop-filter:blur(12px);border-bottom:1px solid var(--brd);padding:14px 32px;display:flex;align-items:center;justify-content:space-between}
+.tb-l h1{font-family:var(--fh);font-size:20px;font-weight:700;letter-spacing:-.02em}
+.tb-l p{font-size:12px;color:var(--mu);margin-top:1px}
+.tb-r{display:flex;align-items:center;gap:10px}
+.tb-time{font-family:var(--fm);font-size:12px;color:var(--mu)}
+.api-pill{display:flex;align-items:center;gap:5px;font-size:11px;padding:4px 10px;border-radius:20px;font-family:var(--fm)}
+.api-pill.mock{background:rgba(240,136,62,.12);color:var(--or);border:1px solid rgba(240,136,62,.25)}
+.api-pill.live{background:rgba(63,185,80,.12);color:var(--gn);border:1px solid rgba(63,185,80,.25)}
+.api-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+.btn-chat{display:flex;align-items:center;gap:7px;background:var(--ac);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-family:var(--fh);font-size:13px;font-weight:700;cursor:pointer;transition:all .15s}
+.btn-chat:hover{background:#E6BA5A;transform:translateY(-1px)}
+.content{padding:28px 32px;display:flex;flex-direction:column;gap:24px}
+@keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+.skel{background:linear-gradient(90deg,var(--surf2) 25%,var(--surf3) 50%,var(--surf2) 75%);background-size:800px 100%;animation:shimmer 1.4s infinite;border-radius:6px}
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.sc{background:var(--surf);border:1px solid var(--brd);border-radius:12px;padding:18px 20px;position:relative;overflow:hidden;transition:border-color .2s;animation:fadeUp .45s ease both}
+.sc:hover{border-color:var(--brd2)}
+.sc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--ca,transparent);border-radius:12px 12px 0 0}
+.sc.cg{--ca:var(--gn)}.sc.cb{--ca:var(--bl)}.sc.ca{--ca:var(--ac)}.sc.cr{--ca:var(--rd)}.sc.cp{--ca:var(--pu)}.sc.ct{--ca:var(--te)}
+.sc-lbl{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--mu);font-weight:500;margin-bottom:10px}
+.sc-val{font-family:var(--fh);font-size:32px;font-weight:800;letter-spacing:-.04em;line-height:1;margin-bottom:8px}
+.vg{color:var(--gn)}.va{color:var(--ac)}.vr{color:var(--rd)}.vb{color:var(--bl)}.vp{color:var(--pu)}.vt{color:var(--te)}
+.sc-sub{font-size:12px;color:var(--mu);display:flex;align-items:center;gap:5px}
+.du{font-size:11px;font-weight:500;padding:1px 5px;border-radius:4px;background:rgba(63,185,80,.15);color:var(--gn)}
+.dd{font-size:11px;font-weight:500;padding:1px 5px;border-radius:4px;background:rgba(248,81,73,.15);color:var(--rd)}
+.sc-ico{position:absolute;right:16px;top:18px;opacity:.07;font-size:44px;line-height:1}
+.sc:nth-child(1){animation-delay:.00s}.sc:nth-child(2){animation-delay:.06s}.sc:nth-child(3){animation-delay:.12s}
+.sc:nth-child(4){animation-delay:.18s}.sc:nth-child(5){animation-delay:.24s}.sc:nth-child(6){animation-delay:.30s}
+.chips-bar{background:var(--surf);border:1px solid var(--brd);border-radius:12px;padding:14px 20px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.chips-lbl{font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:.09em;margin-right:4px;flex-shrink:0}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:20px;font-size:12px;font-family:var(--fb);font-weight:500;cursor:pointer;transition:all .15s;border:1px solid var(--brd2);background:var(--surf2);color:var(--mu)}
+.chip:hover{color:var(--tx);background:var(--surf3);transform:translateY(-1px)}
+.chip.cw{background:rgba(240,136,62,.07);border-color:rgba(240,136,62,.22);color:var(--or)}
+.chip.cb2{background:rgba(88,166,255,.07);border-color:rgba(88,166,255,.22);color:var(--bl)}
+.chip.cgn{background:rgba(63,185,80,.07);border-color:rgba(63,185,80,.22);color:var(--gn)}
+.chip.cam{background:rgba(212,168,67,.07);border-color:rgba(212,168,67,.22);color:var(--ac)}
+.chip.cpu{background:rgba(188,140,255,.07);border-color:rgba(188,140,255,.22);color:var(--pu)}
+.row2{display:grid;grid-template-columns:1fr 340px;gap:14px}
+.panel{background:var(--surf);border:1px solid var(--brd);border-radius:12px;overflow:hidden;animation:fadeUp .5s ease both}
+.ph{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--brd)}
+.pt{font-family:var(--fh);font-size:14px;font-weight:700;letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
+.pdot{width:7px;height:7px;border-radius:50%}
+.pa{font-size:12px;color:var(--bl);cursor:pointer;font-weight:500;text-decoration:none}
+.pa:hover{text-decoration:underline}
+.rbtn{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--mu);cursor:pointer;background:none;border:none;font-family:var(--fb);transition:color .15s}
+.rbtn:hover{color:var(--tx)}
+.rbtn.spin svg{animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.chart-wrap{padding:20px}
+.cleg{display:flex;gap:16px;margin-bottom:16px}
+.cli{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--mu)}
+.cld{width:8px;height:8px;border-radius:50%}
+.chart-svg{width:100%;overflow:visible}
+.alist{padding:12px 16px;display:flex;flex-direction:column;gap:8px}
+.ai{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:var(--surf2);border-radius:8px;border-left:3px solid var(--alc,var(--mu));cursor:pointer;transition:all .15s}
+.ai:hover{background:var(--surf3)}
+.ai.urg{--alc:var(--rd)}.ai.wrn{--alc:var(--or)}.ai.inf{--alc:var(--bl)}
+.adot{width:8px;height:8px;border-radius:50%;background:var(--alc,var(--mu));flex-shrink:0;margin-top:4px}
+.adot.pulse{animation:pulse 2s infinite}
+.ab{flex:1}.at{font-size:13px;font-weight:500;color:var(--tx);margin-bottom:2px}.as2{font-size:11px;color:var(--mu)}
+.atm{font-family:var(--fm);font-size:10px;color:var(--mu);flex-shrink:0;margin-top:2px}
+.abg{font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;flex-shrink:0;margin-top:2px}
+.abg.urg{background:rgba(248,81,73,.15);color:var(--rd)}.abg.wrn{background:rgba(240,136,62,.15);color:var(--or)}.abg.inf{background:rgba(88,166,255,.15);color:var(--bl)}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+thead tr{border-bottom:1px solid var(--brd)}
+thead th{text-align:left;padding:10px 20px;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--mu);font-weight:500}
+tbody tr{border-bottom:1px solid var(--brd);transition:background .1s;cursor:pointer}
+tbody tr:hover{background:var(--surf2)}
+tbody tr:last-child{border-bottom:none}
+td{padding:11px 20px;font-size:13px}
+.bid{font-family:var(--fm);color:var(--ac);font-size:12px}
+.rbadge{font-size:11px;padding:2px 8px;border-radius:20px;background:var(--surf2);color:var(--mu);border:1px solid var(--brd2)}
+.sdot2{display:inline-flex;align-items:center;gap:5px;font-size:12px}
+.sd{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.sd.ok{background:var(--gn)}.sd.gest{background:var(--ac)}.sd.al{background:var(--rd)}
+.gmqbar{width:60px;height:5px;border-radius:3px;background:var(--surf2);overflow:hidden;display:inline-block;vertical-align:middle;margin-left:6px}
+.gmqfill{height:100%;border-radius:3px;background:var(--gn)}
+.glist{padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.gi{background:var(--surf2);border-radius:8px;padding:12px 14px}
+.gh{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.gid{font-family:var(--fm);font-size:12px;color:var(--ac)}
+.gd{font-size:11px;color:var(--mu)}
+.gtrack{height:6px;border-radius:3px;background:var(--brd);overflow:hidden}
+.gfill{height:100%;border-radius:3px}
+.gfoot{display:flex;justify-content:space-between;margin-top:6px}
+.glbl{font-size:11px;color:var(--mu)}.geta{font-size:11px;font-weight:500}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--surf);border:1px solid var(--brd2);border-radius:10px;padding:12px 18px;font-size:13px;display:flex;align-items:center;gap:8px;z-index:100;transform:translateY(60px);opacity:0;transition:all .3s;pointer-events:none}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.ok{border-left:3px solid var(--gn)}.toast.err{border-left:3px solid var(--rd)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(248,81,73,.4)}50%{box-shadow:0 0 0 5px rgba(248,81,73,0)}}
 </style>
 </head>
 <body>
-<header>
-  <span style="font-size:2rem">🐄</span>
-  <div><h1>BoviBot</h1><small>Assistant IA — Gestion d'Élevage Bovin</small></div>
-</header>
-
-<div class="container">
-  <!-- Colonne gauche -->
-  <div>
-    <div class="card">
-      <h2>📊 Tableau de bord</h2>
-      <div class="stats-grid" id="stats">
-        <div class="stat"><div class="val" id="s-actifs">—</div><div class="lbl">Animaux actifs</div></div>
-        <div class="stat"><div class="val" id="s-gestation">—</div><div class="lbl">En gestation</div></div>
-        <div class="stat"><div class="val" id="s-alertes">—</div><div class="lbl">Alertes actives</div></div>
-        <div class="stat critical"><div class="val" id="s-critical">—</div><div class="lbl">Alertes critiques</div></div>
-        <div class="stat"><div class="val" id="s-ventes">—</div><div class="lbl">Ventes ce mois</div></div>
-        <div class="stat"><div class="val" id="s-ca">—</div><div class="lbl">CA mois (FCFA)</div></div>
-      </div>
+<div class="layout">
+<aside class="sidebar">
+  <div class="s-logo">
+    <div class="logo-row">
+      <div class="logo-ico"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M3 14c0-2.5 1.5-4.5 4-5.5M13 8.5c2.5 1 4 3 4 5.5M10 4a2 2 0 100 4 2 2 0 000-4z" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/><path d="M5 16.5c0-2.8 2.24-5 5-5s5 2.2 5 5" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/></svg></div>
+      <span class="logo-nm">BoviBot</span>
     </div>
+    <div class="logo-tg">Gestion intelligente</div>
+  </div>
+  <nav class="s-nav">
+    <span class="nl">Principal</span>
+    <a class="ni on" href="index.html"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>Tableau de bord</a>
+    <a class="ni" href="troupeau.html"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="6" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>Troupeau</a>
+    <a class="ni" href="pesees.html"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 4h12M2 8h8M2 12h5"/></svg>Pesées</a>
+    <a class="ni" href="gestations.html"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="6"/><path d="M8 5v3.5l2 2"/></svg>Gestations</a>
+    <span class="nl">Suivi</span>
+    <a class="ni" href="alertes.html"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 2v2M8 12v2M2 8h2M12 8h2"/><circle cx="8" cy="8" r="3"/></svg>Alertes<span class="nbadge" id="nb-count">3</span></a>
+    <a class="ni" href="#"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 12l4-4 3 3 5-6"/></svg>Croissance (GMQ)</a>
+    <a class="ni" href="#"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 8h6M5 5h6M5 11h3"/></svg>Ventes</a>
+    <span class="nl">IA</span>
+    <a class="ni" href="chat.html"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 12V5a2 2 0 012-2h8a2 2 0 012 2v5a2 2 0 01-2 2H9l-3 2v-2H4a2 2 0 01-2-2z"/></svg>Chat BoviBot</a>
+  </nav>
+  <div class="s-foot"><div class="farm"><div class="farm-av">FD</div><div><p class="farm-nm">Ferme Diallo</p><p class="farm-sb">Thiès · <span id="farm-count">47</span> bovins</p></div></div></div>
+</aside>
 
-    <div class="card">
-      <h2>⚠️ Alertes récentes</h2>
-      <div id="alertes-list"><p style="color:#94a3b8;font-size:0.85rem">Chargement...</p></div>
-    </div>
-
-    <div class="card">
-      <h2>🍼 Gestations en cours</h2>
-      <div id="gestations-list"><p style="color:#94a3b8;font-size:0.85rem">Chargement...</p></div>
+<div class="main">
+  <div class="topbar">
+    <div class="tb-l"><h1>Tableau de bord</h1><p id="last-update">Chargement…</p></div>
+    <div class="tb-r">
+      <div class="api-pill mock" id="api-pill"><span class="api-dot"></span><span id="api-lbl">MODE MOCK</span></div>
+      <span class="tb-time" id="live-time">--:--:--</span>
+      <button class="btn-chat" onclick="window.location='chat.html'"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M1 9V4a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8L5 11V9H3a2 2 0 01-2-2z"/></svg>Chat BoviBot</button>
     </div>
   </div>
 
-  <!-- Colonne droite : Chat -->
-  <div class="card">
-    <h2>💬 Assistant BoviBot</h2>
-    <div class="suggestions">
-      <button onclick="ask('Liste tous les animaux actifs avec leur âge et GMQ')">Troupeau complet</button>
-      <button onclick="ask('Quels animaux ont un GMQ inférieur à 0.3 kg/jour ?')">GMQ faibles</button>
-      <button onclick="ask('Quelles femelles sont en gestation et quand vêlent-elles ?')">Gestations</button>
-      <button onclick="ask('Quels animaux n\'ont pas été vaccinés depuis 6 mois ?')">Vaccinations</button>
-      <button onclick="ask('Enregistre une pesée de 325 kg pour TAG-001 aujourd\'hui')">Saisir pesée</button>
-      <button onclick="ask('Quel est le coût total d\'alimentation ce mois-ci ?')">Coût alim.</button>
+  <div class="content">
+    <div class="stats-grid" id="stats-grid">
+      <div class="sc cg"><div class="sc-lbl">Animaux actifs</div><div class="skel" style="height:36px;width:70px;margin:10px 0 8px"></div><div class="skel" style="height:13px;width:110px"></div><div class="sc-ico">🐄</div></div>
+      <div class="sc cb"><div class="sc-lbl">En gestation</div><div class="skel" style="height:36px;width:50px;margin:10px 0 8px"></div><div class="skel" style="height:13px;width:130px"></div><div class="sc-ico">🤰</div></div>
+      <div class="sc ca"><div class="sc-lbl">Poids moyen</div><div class="skel" style="height:36px;width:90px;margin:10px 0 8px"></div><div class="skel" style="height:13px;width:120px"></div><div class="sc-ico">⚖️</div></div>
+      <div class="sc cr"><div class="sc-lbl">Alertes actives</div><div class="skel" style="height:36px;width:40px;margin:10px 0 8px"></div><div class="skel" style="height:13px;width:100px"></div><div class="sc-ico">⚠️</div></div>
+      <div class="sc cp"><div class="sc-lbl">Ventes ce mois</div><div class="skel" style="height:36px;width:40px;margin:10px 0 8px"></div><div class="skel" style="height:13px;width:110px"></div><div class="sc-ico">🏷️</div></div>
+      <div class="sc ct"><div class="sc-lbl">CA mois (FCFA)</div><div class="skel" style="height:36px;width:100px;margin:10px 0 8px"></div><div class="skel" style="height:13px;width:90px"></div><div class="sc-ico">💰</div></div>
     </div>
 
-    <div class="chat-box" id="chat-box">
-      <div class="msg bot">
-        <div class="bubble">🐄 Bonjour ! Je suis BoviBot.<br>Posez vos questions sur votre troupeau ou demandez-moi d'enregistrer une pesée, une vente...</div>
+    <div class="chips-bar">
+      <span class="chips-lbl">Accès rapide :</span>
+      <button class="chip"    onclick="goChat('Affiche le troupeau complet avec statuts')">🐄 Troupeau complet</button>
+      <button class="chip cw" onclick="goChat('Quels bovins ont un GMQ inférieur à 500 g/j ?')">📉 GMQ faibles</button>
+      <button class="chip cb2" onclick="goChat('Affiche les gestations en cours et leur avancement')">🤰 Gestations</button>
+      <button class="chip cb2" onclick="goChat('Quels bovins ont un RDV vaccination à venir ou en retard ?')">💉 Vaccinations</button>
+      <button class="chip cgn" onclick="goChat('Je veux saisir une pesée')">⚖️ Saisir pesée</button>
+      <button class="chip cam" onclick="goChat('Quel est le coût alimentaire total ce mois ?')">🌾 Coût alim.</button>
+      <button class="chip cpu" onclick="goChat('Je veux déclarer une vente')">🏷️ Déclarer vente</button>
+    </div>
+
+    <div class="row2">
+      <div class="panel" style="animation-delay:.2s">
+        <div class="ph">
+          <span class="pt"><span class="pdot" style="background:var(--gn)"></span>Croissance du troupeau (GMQ)</span>
+          <button class="rbtn" id="rbtn-chart" onclick="loadChart(true)"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M10.5 6A4.5 4.5 0 112.3 3.2M2 1v2.5H4.5"/></svg>Actualiser</button>
+        </div>
+        <div class="chart-wrap">
+          <div class="cleg"><div class="cli"><div class="cld" style="background:var(--gn)"></div>Poids moyen (kg)</div><div class="cli"><div class="cld" style="background:var(--ac)"></div>GMQ (g/j)</div></div>
+          <svg class="chart-svg" viewBox="0 0 540 200">
+            <defs><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2E7D32" stop-opacity=".25"/><stop offset="100%" stop-color="#2E7D32" stop-opacity="0"/></linearGradient></defs>
+            <line x1="40" y1="165" x2="530" y2="165" stroke="rgba(0,0,0,.06)" stroke-width="1"/>
+            <line x1="40" y1="125" x2="530" y2="125" stroke="rgba(0,0,0,.04)" stroke-width="1" stroke-dasharray="4,4"/>
+            <line x1="40" y1="85"  x2="530" y2="85"  stroke="rgba(0,0,0,.04)" stroke-width="1" stroke-dasharray="4,4"/>
+            <line x1="40" y1="45"  x2="530" y2="45"  stroke="rgba(0,0,0,.04)" stroke-width="1" stroke-dasharray="4,4"/>
+            <text x="34" y="168" text-anchor="end" font-family="DM Mono" font-size="9" fill="#8C7B5E">0</text>
+            <text x="34" y="128" text-anchor="end" font-family="DM Mono" font-size="9" fill="#8C7B5E">200</text>
+            <text x="34" y="88"  text-anchor="end" font-family="DM Mono" font-size="9" fill="#8C7B5E">300</text>
+            <text x="34" y="48"  text-anchor="end" font-family="DM Mono" font-size="9" fill="#8C7B5E">400</text>
+            <g id="chart-lines"></g>
+            <g id="chart-labels"></g>
+          </svg>
+        </div>
+      </div>
+      <div class="panel" style="animation-delay:.25s">
+        <div class="ph"><span class="pt"><span class="pdot" style="background:var(--rd)"></span>Alertes récentes</span><a class="pa" href="alertes.html">Tout voir</a></div>
+        <div class="alist" id="alertes-list">
+          <div class="skel" style="height:62px;border-radius:8px"></div>
+          <div class="skel" style="height:62px;border-radius:8px;margin-top:8px"></div>
+          <div class="skel" style="height:62px;border-radius:8px;margin-top:8px"></div>
+        </div>
       </div>
     </div>
 
-    <div class="chat-input">
-      <input type="text" id="user-input" placeholder="Ex: Quel animal a le meilleur GMQ ce mois ?" onkeypress="if(event.key==='Enter') sendMessage()">
-      <button onclick="sendMessage()">Envoyer ➤</button>
-    </div>
-
-    <div id="results-section" style="margin-top:1rem;display:none">
-      <h2>📋 Résultats</h2>
-      <div class="results" id="results-table"></div>
+    <div class="row2">
+      <div class="panel" style="animation-delay:.3s">
+        <div class="ph"><span class="pt"><span class="pdot" style="background:var(--bl)"></span>Aperçu du troupeau</span><button class="rbtn" id="rbtn-bovins" onclick="loadBovins(true)"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M10.5 6A4.5 4.5 0 112.3 3.2M2 1v2.5H4.5"/></svg>Actualiser</button></div>
+        <div class="tw"><table>
+          <thead><tr><th>ID</th><th>Nom</th><th>Race</th><th>Poids (kg)</th><th>GMQ (g/j)</th><th>Statut</th></tr></thead>
+          <tbody id="bovins-tbody">
+            <tr><td colspan="6"><div class="skel" style="height:13px;margin:10px 20px"></div></td></tr>
+            <tr><td colspan="6"><div class="skel" style="height:13px;margin:10px 20px"></div></td></tr>
+            <tr><td colspan="6"><div class="skel" style="height:13px;margin:10px 20px"></div></td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <div class="panel" style="animation-delay:.35s">
+        <div class="ph"><span class="pt"><span class="pdot" style="background:var(--ac)"></span>Gestations en cours</span><a class="pa" href="gestations.html">Détails</a></div>
+        <div class="glist" id="gest-list">
+          <div class="skel" style="height:70px;border-radius:8px"></div>
+          <div class="skel" style="height:70px;border-radius:8px;margin-top:10px"></div>
+          <div class="skel" style="height:70px;border-radius:8px;margin-top:10px"></div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
+</div>
+<div class="toast" id="toast"></div>
 
 <script>
-const API = 'http://127.0.0.1:8002';
-let pendingAction = null;
-let history = [];
+/* ========================================================
+   CONFIG
+   - USE_MOCK = true  → données de démonstration (toujours visible)
+   - USE_MOCK = false → appel à l'API Railway (vraies données)
+   ======================================================== */
+const USE_MOCK  = false;
+const BASE_URL  = "https://web-production-8a06a5.up.railway.app";
 
-async function loadDashboard() {
+/* ── Données de démonstration ── */
+const MOCK_STATS = {
+  total_actifs:47, femelles:28, males:19,
+  en_gestation:8, alertes_actives:3, alertes_critiques:1,
+  ventes_mois:4, ca_mois:740000
+};
+const MOCK_BOVINS = [
+  {numero_tag:"BV-001",nom:"Fatou",   race:"Zébu Gobra",poids_actuel:382,gmq_kg_jour:0.82,statut:"actif"},
+  {numero_tag:"BV-004",nom:"Ndéye",   race:"Taurin",    poids_actuel:295,gmq_kg_jour:0.64,statut:"actif"},
+  {numero_tag:"BV-009",nom:"Aminata", race:"Zébu Gobra",poids_actuel:410,gmq_kg_jour:0.89,statut:"actif"},
+  {numero_tag:"BV-014",nom:"Kebbe",   race:"Métis",     poids_actuel:58, gmq_kg_jour:0.21,statut:"actif"},
+  {numero_tag:"BV-021",nom:"Rokhaya", race:"Zébu Gobra",poids_actuel:348,gmq_kg_jour:0.75,statut:"actif"},
+];
+const MOCK_ALERTES = [
+  {id:1,animal_id:14,niveau:"critical",type:"poids",   message:"Sous-poids critique — 58 kg (seuil : 60 kg)",date_creation:"2025-07-01T08:10:00",numero_tag:"BV-014",animal_nom:"Kebbe"},
+  {id:2,animal_id:27,niveau:"warning", type:"sante",   message:"Vaccination FMDV en retard de 5 jours",     date_creation:"2025-06-30T00:00:00",numero_tag:"BV-027",animal_nom:"Soda"},
+  {id:3,animal_id:9, niveau:"info",    type:"velage",  message:"Accouchement prévu dans 12 jours",           date_creation:"2025-07-01T07:00:00",numero_tag:"BV-009",animal_nom:"Aminata"},
+];
+const MOCK_GESTATIONS = [
+  {mere_id:9, mere_tag:"BV-009",mere_nom:"Aminata",date_velage_prevue:"2025-07-13",jours_restants:12},
+  {mere_id:4, mere_tag:"BV-004",mere_nom:"Ndéye",  date_velage_prevue:"2025-07-30",jours_restants:29},
+  {mere_id:32,mere_tag:"BV-032",mere_nom:"Diara",  date_velage_prevue:"2025-09-16",jours_restants:75},
+];
+const MOCK_CROISSANCE = [
+  {mois:"Jan",poids:280,gmq:520},{mois:"Fév",poids:292,gmq:580},{mois:"Mar",poids:301,gmq:640},
+  {mois:"Avr",poids:310,gmq:700},{mois:"Mai",poids:315,gmq:660},{mois:"Jun",poids:319,gmq:720},{mois:"Jul",poids:324,gmq:680},
+];
+
+/* ── Utilitaires ── */
+const wait = ms => new Promise(r => setTimeout(r, ms));
+function fmt(n){ return Number(n).toLocaleString('fr-FR'); }
+function spin(id, on){ const b = document.getElementById(id); if(b) b.classList.toggle('spin', on); }
+function toast(msg, type='ok'){
+  const t = document.getElementById('toast');
+  t.className = 'toast show ' + type;
+  t.innerHTML = (type==='ok' ? '✓ ' : '⚠ ') + msg;
+  clearTimeout(t._tid);
+  t._tid = setTimeout(() => { t.className = 'toast'; }, 2800);
+}
+
+/* ── Fetch API avec fallback automatique vers mock ── */
+async function apiFetch(endpoint, mockData){
+  if(USE_MOCK){ await wait(350); return mockData; }
   try {
-    const d = await fetch(`${API}/api/dashboard`).then(r=>r.json());
-    document.getElementById('s-actifs').textContent = d.total_actifs ?? '—';
-    document.getElementById('s-gestation').textContent = d.en_gestation ?? '—';
-    document.getElementById('s-alertes').textContent = d.alertes_actives ?? '—';
-    document.getElementById('s-critical').textContent = d.alertes_critiques ?? '—';
-    document.getElementById('s-ventes').textContent = d.ventes_mois ?? '—';
-    document.getElementById('s-ca').textContent = Number(d.ca_mois||0).toLocaleString('fr-SN');
-  } catch(e) {}
-}
-
-async function loadAlertes() {
-  try {
-    const data = await fetch(`${API}/api/alertes`).then(r=>r.json());
-    const el = document.getElementById('alertes-list');
-    if (!data.length) { el.innerHTML = '<p style="color:#22c55e;font-size:0.85rem">✅ Aucune alerte active</p>'; return; }
-    el.innerHTML = data.slice(0,6).map(a => `
-      <div class="alerte-item alerte-${a.niveau}">
-        <span>${a.animal_tag ? '['+a.animal_tag+'] ' : ''}${a.message}</span>
-        <button onclick="traiterAlerte(${a.id})" title="Marquer comme traitée">✓</button>
-      </div>`).join('');
-  } catch(e) {}
-}
-
-async function loadGestations() {
-  try {
-    const data = await fetch(`${API}/api/reproduction/en-cours`).then(r=>r.json());
-    const el = document.getElementById('gestations-list');
-    if (!data.length) { el.innerHTML = '<p style="color:#94a3b8;font-size:0.85rem">Aucune gestation en cours</p>'; return; }
-    el.innerHTML = data.map(g => `
-      <div style="padding:0.4rem 0;border-bottom:1px solid #f0e8d8;font-size:0.85rem">
-        🐄 <strong>${g.mere_tag}</strong> × ${g.pere_tag} — Vêlage : <strong>${g.date_velage_prevue}</strong>
-        <span style="color:${g.jours_restants<14?'#dc2626':'#16a34a'};font-weight:bold"> (J-${g.jours_restants})</span>
-      </div>`).join('');
-  } catch(e) {}
-}
-
-async function traiterAlerte(id) {
-  await fetch(`${API}/api/alertes/${id}/traiter`, {method:'POST'});
-  loadAlertes(); loadDashboard();
-}
-
-function ask(q) { document.getElementById('user-input').value = q; sendMessage(); }
-
-function addMessage(role, text, sql=null, extra=null) {
-  const box = document.getElementById('chat-box');
-  const div = document.createElement('div');
-  div.className = `msg ${role}`;
-  let html = `<div class="bubble">${text}${sql?`<div class="sql-preview">${sql}</div>`:''}</div>`;
-  if (extra) html += extra;
-  div.innerHTML = html;
-  box.appendChild(div);
-  box.scrollTop = box.scrollHeight;
-  return div;
-}
-
-async function confirmAction(yes) {
-  if (!pendingAction) return;
-  document.getElementById('confirm-div')?.remove();
-  if (yes) {
-    addMessage('bot', '⏳ Exécution en cours...');
-    const r = await fetch(`${API}/api/chat`, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({question:'', confirm_action:true, pending_action:pendingAction})
-    });
-    const data = await r.json();
-    document.querySelector('.msg.bot:last-child')?.remove();
-    addMessage('bot', data.answer || 'Action effectuée !');
-    pendingAction = null;
-    loadDashboard(); loadAlertes();
-  } else {
-    addMessage('bot', '❌ Action annulée.');
-    pendingAction = null;
-  }
-}
-
-async function sendMessage() {
-  const input = document.getElementById('user-input');
-  const question = input.value.trim();
-  if (!question) return;
-  input.value = '';
-  addMessage('user', question);
-  history.push({role:'user', content:question});
-  const loading = addMessage('bot', '⏳ Analyse en cours...');
-
-  try {
-    const r = await fetch(`${API}/api/chat`, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({question, history: history.slice(-6)})
-    });
-    const data = await r.json();
-    loading.remove();
-
-    if (data.type === 'action_pending') {
-      pendingAction = data.pending_action;
-      const confirmDiv = document.createElement('div');
-      confirmDiv.id = 'confirm-div';
-      confirmDiv.className = 'msg confirm';
-      confirmDiv.innerHTML = `<div class="bubble">⚠️ ${data.confirmation}<div class="confirm-btns"><button class="btn-oui" onclick="confirmAction(true)">✅ Confirmer</button><button class="btn-non" onclick="confirmAction(false)">❌ Annuler</button></div></div>`;
-      document.getElementById('chat-box').appendChild(confirmDiv);
-    } else {
-      addMessage('bot', data.answer + (data.count !== undefined ? ` (${data.count} résultat${data.count>1?'s':''})` : ''), data.sql);
-      history.push({role:'assistant', content: data.answer});
-    }
-
-    if (data.data && data.data.length > 0) {
-      document.getElementById('results-section').style.display = 'block';
-      const keys = Object.keys(data.data[0]);
-      const rows = data.data.map(row=>`<tr>${keys.map(k=>`<td>${row[k]??''}</td>`).join('')}</tr>`).join('');
-      document.getElementById('results-table').innerHTML = `<table><thead><tr>${keys.map(k=>`<th>${k}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table>`;
-    }
-    document.getElementById('chat-box').scrollTop = 9999;
+    const r = await fetch(BASE_URL + endpoint, { headers: {'Content-Type':'application/json'} });
+    if(!r.ok) throw new Error(r.status);
+    return await r.json();
   } catch(e) {
-    loading.remove();
-    addMessage('bot', '❌ Erreur de connexion au serveur.');
+    console.warn('API indisponible, fallback mock:', e.message);
+    setPill(false);
+    return mockData;
   }
 }
 
-loadDashboard(); loadAlertes(); loadGestations();
+function setPill(live){
+  const p = document.getElementById('api-pill');
+  const l = document.getElementById('api-lbl');
+  if(live){ p.className='api-pill live'; l.textContent='EN DIRECT'; }
+  else     { p.className='api-pill mock'; l.textContent='MODE DÉMO'; }
+}
+
+/* ── Stats ── */
+async function loadStats(){
+  const s = await apiFetch('/api/dashboard', MOCK_STATS);
+  // Adapter les clés selon ce que retourne votre API
+  const actifs   = s.bovins_actifs   ?? s.total_actifs ?? 0;
+  const gestat   = s.en_gestation    ?? 0;
+  const poids    = s.poids_moyen     ?? 0;
+  const alertes  = s.alertes_actives ?? 0;
+  const critiq   = s.alertes_critiques ?? 0;
+  const ventes   = s.ventes_mois     ?? 0;
+  const ca       = s.ca_mois_fcfa    ?? s.ca_mois ?? 0;
+
+  document.getElementById('stats-grid').innerHTML = `
+    <div class="sc cg"><div class="sc-lbl">Animaux actifs</div><div class="sc-val vg">${actifs}</div><div class="sc-sub">🐄 troupeau actif</div><div class="sc-ico">🐄</div></div>
+    <div class="sc cb"><div class="sc-lbl">En gestation</div><div class="sc-val vb">${gestat}</div><div class="sc-sub">${gestat > 0 ? gestat+' femelles' : 'Aucune'}</div><div class="sc-ico">🤰</div></div>
+    <div class="sc ca"><div class="sc-lbl">Poids moyen</div><div class="sc-val va">${poids > 0 ? poids+' <span style="font-size:18px;font-weight:500">kg</span>' : '—'}</div><div class="sc-sub">moyenne du troupeau</div><div class="sc-ico">⚖️</div></div>
+    <div class="sc cr"><div class="sc-lbl">Alertes actives</div><div class="sc-val vr">${alertes}</div><div class="sc-sub"><span class="dd">dont ${critiq} critique${critiq>1?'s':''}</span></div><div class="sc-ico">⚠️</div></div>
+    <div class="sc cp"><div class="sc-lbl">Ventes ce mois</div><div class="sc-val vp">${ventes}</div><div class="sc-sub">ce mois</div><div class="sc-ico">🏷️</div></div>
+    <div class="sc ct"><div class="sc-lbl">CA mois (FCFA)</div><div class="sc-val vt" style="font-size:22px">${fmt(ca)}</div><div class="sc-sub">chiffre d'affaires</div><div class="sc-ico">💰</div></div>
+  `;
+  document.getElementById('farm-count').textContent = actifs;
+  document.getElementById('nb-count').textContent   = alertes;
+  document.getElementById('last-update').textContent = 'Mis à jour — ' + new Date().toLocaleTimeString('fr-FR');
+  if(!USE_MOCK) setPill(true);
+}
+
+/* ── Alertes ── */
+async function loadAlertes(){
+  const data = await apiFetch('/api/alertes', MOCK_ALERTES);
+  const sev = {
+    critical:{cls:'urg',lbl:'Urgent'},
+    warning: {cls:'wrn',lbl:'Retard'},
+    info:    {cls:'inf',lbl:'Info'}
+  };
+  document.getElementById('alertes-list').innerHTML = data.slice(0,3).map(a => {
+    const s = sev[a.niveau] || sev.info;
+    const h = new Date(a.date_creation).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+    const tag = a.numero_tag || a.bovin_id || '';
+    const nom = a.animal_nom || '';
+    const msg = a.message || a.titre || '';
+    return `<div class="ai ${s.cls}" onclick="window.location='alertes.html'">
+      <div class="adot${a.niveau==='critical'?' pulse':''}"></div>
+      <div class="ab">
+        <div class="at">${tag}${nom?' — '+nom:''}</div>
+        <div class="as2">${msg}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+        <span class="abg ${s.cls}">${s.lbl}</span>
+        <span class="atm">${h}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ── Troupeau ── */
+async function loadBovins(manual=false){
+  spin('rbtn-bovins', true);
+  const data = await apiFetch('/api/animaux', MOCK_BOVINS);
+  const stMap = {actif:'ok', gestation:'gest', quarantaine:'al', mort:'al', vendu:'al'};
+  const stLbl = {actif:'Actif', gestation:'Gestation', quarantaine:'Quarantaine', mort:'Mort', vendu:'Vendu'};
+  document.getElementById('bovins-tbody').innerHTML = data.map(b => {
+    const gmq    = b.gmq_kg_jour != null ? Math.round(b.gmq_kg_jour * 1000) : (b.gmq ?? 0);
+    const poids  = b.poids_actuel ?? b.poids ?? 0;
+    const tag    = b.numero_tag   ?? b.id    ?? '';
+    const race   = b.race         ?? '';
+    const statut = b.statut       ?? 'actif';
+    const pct    = Math.min(100, Math.round(gmq / 10));
+    const gc     = gmq < 400 ? 'var(--rd)' : gmq < 600 ? 'var(--ac)' : 'var(--gn)';
+    return `<tr onclick="window.location='troupeau.html'">
+      <td><span class="bid">${tag}</span></td>
+      <td>${b.nom ?? ''}</td>
+      <td><span class="rbadge">${race}</span></td>
+      <td style="${statut==='quarantaine'?'color:var(--rd);font-weight:500':''}">${poids}</td>
+      <td>${gmq} <span class="gmqbar"><span class="gmqfill" style="width:${pct}%;background:${gc}"></span></span></td>
+      <td><span class="sdot2"><span class="sd ${stMap[statut]||'ok'}"></span>${stLbl[statut]||statut}</span></td>
+    </tr>`;
+  }).join('');
+  spin('rbtn-bovins', false);
+  if(manual) toast('Troupeau actualisé');
+}
+
+/* ── Gestations ── */
+async function loadGestations(){
+  const data = await apiFetch('/api/reproduction/en-cours', MOCK_GESTATIONS);
+  const GESTATION_TOTALE = 285;
+  document.getElementById('gest-list').innerHTML = data.map(g => {
+    const jours   = g.jours_restants != null
+      ? GESTATION_TOTALE - g.jours_restants
+      : (g.jours ?? 0);
+    const restant = g.jours_restants ?? (GESTATION_TOTALE - jours);
+    const total   = g.total ?? GESTATION_TOTALE;
+    const pct     = Math.round(jours / total * 100);
+    const couleur = pct >= 90 ? '#F0883E' : pct >= 70 ? '#D4A843' : '#3FB950';
+    const tag     = g.mere_tag ?? g.bovin_id ?? '';
+    const nom     = g.mere_nom ?? g.bovin_nom ?? '';
+    const eta     = restant <= 0 ? 'Imminent !' : `dans ${restant} jours`;
+    return `<div class="gi">
+      <div class="gh">
+        <span class="gid">${tag} · ${nom}</span>
+        <span class="gd">${jours} / ${total} j</span>
+      </div>
+      <div class="gtrack"><div class="gfill" style="width:${pct}%;background:${couleur}"></div></div>
+      <div class="gfoot">
+        <span class="glbl">Accouchement prévu</span>
+        <span class="geta" style="color:${pct>=90?'var(--or)':'var(--tx)'}">${g.eta ?? eta}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ── Graphique ── */
+async function loadChart(manual=false){
+  spin('rbtn-chart', true);
+  const data = MOCK_CROISSANCE; // graphique toujours en mock (données historiques)
+  const n  = data.length;
+  const xs = data.map((_,i) => 70 + i * (460/(n-1)));
+  const maxP = Math.max(...data.map(d=>d.poids)), minP = Math.min(...data.map(d=>d.poids));
+  const py   = p => 165 - ((p-minP)/(maxP-minP+5))*120;
+  const maxG = Math.max(...data.map(d=>d.gmq));
+  const gy   = g => 165 - (g/maxG)*100;
+  const pts  = data.map((d,i) => ({x:xs[i], py:py(d.poids), gy:gy(d.gmq), mois:d.mois}));
+  const pLine = pts.map((p,i) => (i===0?'M':'L')+p.x+','+p.py).join(' ');
+  const gLine = pts.map((p,i) => (i===0?'M':'L')+p.x+','+p.gy).join(' ');
+  document.getElementById('chart-lines').innerHTML = `
+    <path d="${pLine} L${pts[n-1].x},165 L${pts[0].x},165 Z" fill="url(#ag)"/>
+    <path d="${pLine}" fill="none" stroke="#3FB950" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="600" stroke-dashoffset="600"><animate attributeName="stroke-dashoffset" from="600" to="0" dur="1.2s" fill="freeze"/></path>
+    <path d="${gLine}" fill="none" stroke="#D4A843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="600" stroke-dashoffset="600"><animate attributeName="stroke-dashoffset" from="600" to="0" dur="1.2s" fill="freeze" begin="0.2s"/></path>
+    ${pts.map((p,i) => `<circle cx="${p.x}" cy="${p.py}" r="${i===n-1?5:3.5}" fill="#2E7D32" ${i===n-1?'stroke="#fff" stroke-width="2"':''}/>`).join('')}
+  `;
+  document.getElementById('chart-labels').innerHTML = pts.map(p =>
+    `<text x="${p.x}" y="180" text-anchor="middle" font-family="DM Mono" font-size="9" fill="#8C7B5E">${p.mois}</text>`
+  ).join('');
+  spin('rbtn-chart', false);
+  if(manual) toast('Graphique actualisé');
+}
+
+function goChat(msg){
+  sessionStorage.setItem('bovibot_prefill', msg);
+  window.location = 'chat.html';
+}
+
+/* ── Horloge ── */
+function tick(){ document.getElementById('live-time').textContent = new Date().toLocaleTimeString('fr-FR'); }
+tick(); setInterval(tick, 1000);
+
+/* ── Init ── */
+loadStats();
+loadAlertes();
+loadBovins();
+loadGestations();
+loadChart();
+setInterval(() => { loadStats(); loadAlertes(); }, 60000);
 </script>
 </body>
 </html>
