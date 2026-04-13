@@ -460,6 +460,47 @@ loadBovins();
 loadGestations();
 loadChart();
 setInterval(() => { loadStats(); loadAlertes(); }, 60000);
+  // ================= NAVIGATION ALERTES =================
+const menuAlertes = document.getElementById('nav-alertes'); // Assure-toi d'avoir id="nav-alertes" sur le bouton du menu
+const sectionAlertes = document.getElementById('page-alertes');
+
+if (menuAlertes && sectionAlertes) {
+    menuAlertes.addEventListener('click', () => {
+        // Cacher les autres pages
+        document.getElementById('page-dashboard').style.display = 'none';
+        if(document.getElementById('page-troupeau')) document.getElementById('page-troupeau').style.display = 'none';
+        if(document.getElementById('page-gestation')) document.getElementById('page-gestation').style.display = 'none';
+        if(document.getElementById('page-chat')) document.getElementById('page-chat').style.display = 'none';
+        
+        // Afficher Alertes
+        sectionAlertes.style.display = 'block';
+    });
+}
+
+// ================= NAVIGATION CHAT =================
+const menuChat = document.getElementById('nav-chat'); // Assure-toi d'avoir id="nav-chat" sur le bouton du menu
+const sectionChat = document.getElementById('page-chat');
+
+if (menuChat && sectionChat) {
+    menuChat.addEventListener('click', () => {
+        // Cacher les autres pages
+        document.getElementById('page-dashboard').style.display = 'none';
+        if(document.getElementById('page-troupeau')) document.getElementById('page-troupeau').style.display = 'none';
+        if(document.getElementById('page-gestation')) document.getElementById('page-gestation').style.display = 'none';
+        if(document.getElementById('page-alertes')) document.getElementById('page-alertes').style.display = 'none';
+        
+        // Afficher Chat
+        sectionChat.style.display = 'block';
+    });
+}
 </script>
+
+<div id="page-alertes" class="content-section" style="display: none;">
+    <iframe src="bovibot_alertes.html" width="100%" height="800px" style="border: none; border-radius: 10px;"></iframe>
+</div>
+
+<div id="page-chat" class="content-section" style="display: none;">
+    <iframe src="bovibot_chat.html" width="100%" height="800px" style="border: none; border-radius: 10px;"></iframe>
+</div>
 </body>
 </html>
