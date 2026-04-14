@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BoviBot — Croissance (GMQ)</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#F5F0E8;--surf:#FDFAF4;--surf2:#EDE8DC;--surf3:#E4DDD0;--brd:rgba(160,140,110,0.18);--brd2:rgba(160,140,110,0.32);--tx:#2C2416;--mu:#8C7B5E;--ac:#B8860B;--gn:#2E7D32;--rd:#C62828;--or:#E65100;--bl:#1565C0;--fh:'Syne',sans-serif;--fb:'DM Sans',sans-serif;--fm:'DM Mono',monospace}
+html,body{background:var(--bg);color:var(--tx);font-family:var(--fb);font-size:14px;min-height:100vh;line-height:1.5}
+.layout{display:flex;min-height:100vh}
+.sidebar{width:220px;flex-shrink:0;background:var(--surf);border-right:1px solid var(--brd);display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+.s-logo{padding:22px 20px 18px;border-bottom:1px solid var(--brd)}
+.logo-row{display:flex;align-items:center;gap:10px}
+.logo-ico{width:32px;height:32px;background:var(--ac);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo-nm{font-family:var(--fh);font-size:17px;font-weight:800;letter-spacing:-.03em}
+.logo-tg{font-size:10px;color:var(--mu);letter-spacing:.08em;text-transform:uppercase;margin-top:3px;padding-left:42px}
+.s-nav{flex:1;padding:14px 12px;display:flex;flex-direction:column;gap:2px;overflow-y:auto}
+.nl{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--mu);padding:10px 8px 5px}
+.ni{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;color:var(--mu);font-size:13px;transition:all .15s;text-decoration:none}
+.ni:hover{background:var(--surf2);color:var(--tx)}
+.ni.on{background:rgba(212,168,67,.12);color:var(--ac);font-weight:500}
+.ni svg{width:15px;height:15px;flex-shrink:0}
+.nbadge{margin-left:auto;background:var(--rd);color:#fff;font-size:10px;font-weight:600;padding:1px 6px;border-radius:20px;font-family:var(--fm)}
+.s-foot{padding:14px 12px;border-top:1px solid var(--brd)}
+.farm{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;background:var(--surf2)}
+.farm-av{width:26px;height:26px;border-radius:6px;background:linear-gradient(135deg,#D4A843,#A67C2E);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0}
+.farm-nm{font-size:12px;font-weight:500}.farm-sb{font-size:10px;color:var(--mu)}
+.main{flex:1;overflow-y:auto;display:flex;flex-direction:column}
+.topbar{position:sticky;top:0;z-index:10;background:rgba(245,240,232,.93);backdrop-filter:blur(12px);border-bottom:1px solid var(--brd);padding:14px 32px;display:flex;align-items:center;justify-content:space-between}
+.tb-l h1{font-family:var(--fh);font-size:20px;font-weight:700;letter-spacing:-.02em}
+.tb-l p{font-size:12px;color:var(--mu);margin-top:1px}
+.tb-r{display:flex;align-items:center;gap:10px}
+.tb-time{font-family:var(--fm);font-size:12px;color:var(--mu)}
+.api-pill{display:flex;align-items:center;gap:5px;font-size:11px;padding:4px 10px;border-radius:20px;font-family:var(--fm)}
+.api-pill.mock{background:rgba(230,81,0,.12);color:var(--or);border:1px solid rgba(230,81,0,.25)}
+.api-pill.live{background:rgba(46,125,50,.12);color:var(--gn);border:1px solid rgba(46,125,50,.25)}
+.api-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+.content{padding:28px 32px;display:flex;flex-direction:column;gap:20px}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.sc{background:var(--surf);border:1px solid var(--brd);border-radius:12px;padding:16px 18px;position:relative;overflow:hidden}
+.sc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--ca,transparent);border-radius:12px 12px 0 0}
+.sc.cgn{--ca:var(--gn)}.sc.ca{--ca:var(--ac)}.sc.crd{--ca:var(--rd)}.sc.cbl{--ca:var(--bl)}
+.sc-lbl{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--mu);font-weight:500;margin-bottom:8px}
+.sc-val{font-family:var(--fh);font-size:26px;font-weight:800;letter-spacing:-.04em;line-height:1;margin-bottom:4px}
+.sc-sub{font-size:11px;color:var(--mu)}
+.panel{background:var(--surf);border:1px solid var(--brd);border-radius:12px;overflow:hidden}
+.ph{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--brd)}
+.pt{font-family:var(--fh);font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px}
+.pdot{width:7px;height:7px;border-radius:50%}
+.chart-wrap{padding:24px}
+.cleg{display:flex;gap:16px;margin-bottom:16px}
+.cli{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--mu)}
+.cld{width:8px;height:8px;border-radius:50%}
+.chart-svg{width:100%;overflow:visible}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+thead tr{border-bottom:1px solid var(--brd)}
+thead th{text-align:left;padding:10px 20px;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--mu);font-weight:500}
+tbody tr{border-bottom:1px solid var(--brd);transition:background .1s}
+tbody tr:hover{background:var(--surf2)}
+tbody tr:last-child{border-bottom:none}
+td{padding:10px 20px;font-size:13px}
+.bid{font-family:var(--fm);color:var(--ac);font-size:12px}
+.gmq-bar-wrap{display:flex;align-items:center;gap:8px}
+.gmq-bar{height:6px;border-radius:3px;background:var(--surf2);overflow:hidden;width:80px;display:inline-block}
+.gmq-fill{height:100%;border-radius:3px}
+@keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+.skel{background:linear-gradient(90deg,var(--surf2) 25%,var(--surf3) 50%,var(--surf2) 75%);background-size:800px 100%;animation:shimmer 1.4s infinite;border-radius:6px}
+</style>
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <div class="s-logo">
+    <div class="logo-row">
+      <div class="logo-ico"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M3 14c0-2.5 1.5-4.5 4-5.5M13 8.5c2.5 1 4 3 4 5.5M10 4a2 2 0 100 4 2 2 0 000-4z" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/><path d="M5 16.5c0-2.8 2.24-5 5-5s5 2.2 5 5" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/></svg></div>
+      <span class="logo-nm">BoviBot</span>
+    </div>
+    <div class="logo-tg">Gestion intelligente</div>
+  </div>
+  <nav class="s-nav">
+    <span class="nl">Principal</span>
+    <a class="ni" href="index.html"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>Tableau de bord</a>
+    <a class="ni" href="troupeau.html"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="6" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>Troupeau</a>
+    <a class="ni" href="gestations.html"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="6"/><path d="M8 5v3.5l2 2"/></svg>Gestations</a>
+    <span class="nl">Suivi</span>
+    <a class="ni" href="alertes.html"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 2v2M8 12v2M2 8h2M12 8h2"/><circle cx="8" cy="8" r="3"/></svg>Alertes<span class="nbadge">—</span></a>
+    <a class="ni" href="pesees.html"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 4h12M2 8h8M2 12h5"/></svg>Pesées</a>
+    <a class="ni on" href="croissance.html"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 12l4-4 3 3 5-6"/></svg>Croissance (GMQ)</a>
+    <a class="ni" href="ventes.html"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 8h6M5 5h6M5 11h3"/></svg>Ventes</a>
+    <span class="nl">IA</span>
+    <a class="ni" href="chat.html"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 12V5a2 2 0 012-2h8a2 2 0 012 2v5a2 2 0 01-2 2H9l-3 2v-2H4a2 2 0 01-2-2z"/></svg>Chat BoviBot</a>
+  </nav>
+  <div class="s-foot"><div class="farm"><div class="farm-av">FD</div><div><p class="farm-nm">Ferme Diallo</p><p class="farm-sb">Thiès</p></div></div></div>
+</aside>
+<div class="main">
+  <div class="topbar">
+    <div class="tb-l"><h1>📈 Croissance (GMQ)</h1><p id="subtitle">Chargement…</p></div>
+    <div class="tb-r">
+      <div class="api-pill mock" id="api-pill"><span class="api-dot"></span><span id="api-lbl">Connexion…</span></div>
+      <span class="tb-time" id="live-time">--:--:--</span>
+    </div>
+  </div>
+  <div class="content">
+    <div class="stats-row">
+      <div class="sc cgn"><div class="sc-lbl">GMQ moyen</div><div class="sc-val" id="gmq-moy" style="color:var(--gn)">—</div><div class="sc-sub">g/jour</div></div>
+      <div class="sc ca"><div class="sc-lbl">Poids moyen</div><div class="sc-val" id="poids-moy" style="color:var(--ac)">—</div><div class="sc-sub">kg</div></div>
+      <div class="sc crd"><div class="sc-lbl">GMQ < 300 g/j</div><div class="sc-val" id="gmq-faibles" style="color:var(--rd)">—</div><div class="sc-sub">bovins à surveiller</div></div>
+      <div class="sc cbl"><div class="sc-lbl">Meilleur GMQ</div><div class="sc-val" id="gmq-best" style="color:var(--bl)">—</div><div class="sc-sub">g/jour</div></div>
+    </div>
+    <div class="panel">
+      <div class="ph">
+        <span class="pt"><span class="pdot" style="background:var(--gn)"></span>GMQ par animal</span>
+      </div>
+      <div class="tw">
+        <table>
+          <thead><tr><th>Tag</th><th>Nom</th><th>Race</th><th>Poids actuel (kg)</th><th>GMQ (g/j)</th><th>Tendance</th></tr></thead>
+          <tbody id="tbody">
+            <tr><td colspan="6"><div class="skel" style="height:13px;margin:12px 20px"></div></td></tr>
+            <tr><td colspan="6"><div class="skel" style="height:13px;margin:12px 20px"></div></td></tr>
+            <tr><td colspan="6"><div class="skel" style="height:13px;margin:12px 20px"></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+<script>
+const BASE_URL="https://web-production-8a06a5.up.railway.app";
+const MOCK=[
+  {numero_tag:"TAG-001",nom:"Baaba",race:"Zébu Gobra",poids_actuel:320,gmq_kg_jour:0.50},
+  {numero_tag:"TAG-002",nom:"Yaye", race:"Zébu Gobra",poids_actuel:280,gmq_kg_jour:0.42},
+  {numero_tag:"TAG-006",nom:"Veau1",race:"Zébu Gobra",poids_actuel:85, gmq_kg_jour:0.75},
+  {numero_tag:"TAG-007",nom:"Veau2",race:"Zébu Gobra",poids_actuel:72, gmq_kg_jour:0.70},
+  {numero_tag:"TAG-003",nom:"Samba",race:"Ndama",     poids_actuel:200,gmq_kg_jour:0.00},
+];
+
+async function load(){
+  let data;
+  try{
+    const r=await fetch(BASE_URL+'/api/animaux');
+    if(!r.ok) throw new Error(r.status);
+    data=await r.json();
+    document.getElementById('api-pill').className='api-pill live';
+    document.getElementById('api-lbl').textContent='🟢 EN DIRECT';
+  }catch(e){
+    data=MOCK;
+    document.getElementById('api-pill').className='api-pill mock';
+    document.getElementById('api-lbl').textContent='⚠ MODE DÉMO';
+  }
+
+  // Trier par GMQ décroissant
+  data.sort((a,b)=>(b.gmq_kg_jour||0)-(a.gmq_kg_jour||0));
+  document.getElementById('subtitle').textContent=data.length+' animaux analysés';
+
+  const gmqs=data.map(b=>(b.gmq_kg_jour||0)*1000);
+  const gmqMoy=gmqs.length?Math.round(gmqs.reduce((s,g)=>s+g,0)/gmqs.length):0;
+  const poidsArr=data.map(b=>b.poids_actuel||0).filter(p=>p>0);
+  const poidsMoy=poidsArr.length?Math.round(poidsArr.reduce((s,p)=>s+p,0)/poidsArr.length):0;
+  const faibles=gmqs.filter(g=>g<300&&g>0).length;
+  const best=gmqs.length?Math.round(Math.max(...gmqs)):0;
+
+  document.getElementById('gmq-moy').textContent=gmqMoy;
+  document.getElementById('poids-moy').textContent=poidsMoy;
+  document.getElementById('gmq-faibles').textContent=faibles;
+  document.getElementById('gmq-best').textContent=best;
+
+  const maxGmq=best||1;
+  document.getElementById('tbody').innerHTML=data.map(b=>{
+    const gmq=Math.round((b.gmq_kg_jour||0)*1000);
+    const poids=b.poids_actuel||0;
+    const pct=Math.min(100,Math.round(gmq/maxGmq*100));
+    const col=gmq<300?'var(--rd)':gmq<600?'var(--ac)':'var(--gn)';
+    const trend=gmq>=600?'📈 Excellent':gmq>=400?'➡️ Correct':gmq>0?'📉 Faible':'— Aucune pesée';
+    return `<tr>
+      <td><span class="bid">${b.numero_tag||''}</span></td>
+      <td>${b.nom||''}</td>
+      <td>${b.race||''}</td>
+      <td>${poids}</td>
+      <td>
+        <div class="gmq-bar-wrap">
+          <strong style="color:${col};font-family:var(--fm)">${gmq}</strong>
+          <div class="gmq-bar"><div class="gmq-fill" style="width:${pct}%;background:${col}"></div></div>
+        </div>
+      </td>
+      <td style="font-size:12px">${trend}</td>
+    </tr>`;
+  }).join('');
+}
+function tick(){document.getElementById('live-time').textContent=new Date().toLocaleTimeString('fr-FR');}
+tick();setInterval(tick,1000);
+load();
+</script>
+</body>
+</html>

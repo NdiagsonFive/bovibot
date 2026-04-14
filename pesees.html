@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BoviBot — Pesées</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#F5F0E8;--surf:#FDFAF4;--surf2:#EDE8DC;--surf3:#E4DDD0;--brd:rgba(160,140,110,0.18);--brd2:rgba(160,140,110,0.32);--tx:#2C2416;--mu:#8C7B5E;--ac:#B8860B;--gn:#2E7D32;--rd:#C62828;--or:#E65100;--bl:#1565C0;--fh:'Syne',sans-serif;--fb:'DM Sans',sans-serif;--fm:'DM Mono',monospace}
+html,body{background:var(--bg);color:var(--tx);font-family:var(--fb);font-size:14px;min-height:100vh;line-height:1.5}
+.layout{display:flex;min-height:100vh}
+.sidebar{width:220px;flex-shrink:0;background:var(--surf);border-right:1px solid var(--brd);display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+.s-logo{padding:22px 20px 18px;border-bottom:1px solid var(--brd)}
+.logo-row{display:flex;align-items:center;gap:10px}
+.logo-ico{width:32px;height:32px;background:var(--ac);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo-nm{font-family:var(--fh);font-size:17px;font-weight:800;letter-spacing:-.03em}
+.logo-tg{font-size:10px;color:var(--mu);letter-spacing:.08em;text-transform:uppercase;margin-top:3px;padding-left:42px}
+.s-nav{flex:1;padding:14px 12px;display:flex;flex-direction:column;gap:2px;overflow-y:auto}
+.nl{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--mu);padding:10px 8px 5px}
+.ni{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;color:var(--mu);font-size:13px;transition:all .15s;text-decoration:none}
+.ni:hover{background:var(--surf2);color:var(--tx)}
+.ni.on{background:rgba(212,168,67,.12);color:var(--ac);font-weight:500}
+.ni svg{width:15px;height:15px;flex-shrink:0}
+.nbadge{margin-left:auto;background:var(--rd);color:#fff;font-size:10px;font-weight:600;padding:1px 6px;border-radius:20px;font-family:var(--fm)}
+.s-foot{padding:14px 12px;border-top:1px solid var(--brd)}
+.farm{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;background:var(--surf2)}
+.farm-av{width:26px;height:26px;border-radius:6px;background:linear-gradient(135deg,#D4A843,#A67C2E);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0}
+.farm-nm{font-size:12px;font-weight:500}.farm-sb{font-size:10px;color:var(--mu)}
+.main{flex:1;overflow-y:auto;display:flex;flex-direction:column}
+.topbar{position:sticky;top:0;z-index:10;background:rgba(245,240,232,.93);backdrop-filter:blur(12px);border-bottom:1px solid var(--brd);padding:14px 32px;display:flex;align-items:center;justify-content:space-between}
+.tb-l h1{font-family:var(--fh);font-size:20px;font-weight:700;letter-spacing:-.02em}
+.tb-l p{font-size:12px;color:var(--mu);margin-top:1px}
+.tb-r{display:flex;align-items:center;gap:10px}
+.tb-time{font-family:var(--fm);font-size:12px;color:var(--mu)}
+.api-pill{display:flex;align-items:center;gap:5px;font-size:11px;padding:4px 10px;border-radius:20px;font-family:var(--fm)}
+.api-pill.mock{background:rgba(230,81,0,.12);color:var(--or);border:1px solid rgba(230,81,0,.25)}
+.api-pill.live{background:rgba(46,125,50,.12);color:var(--gn);border:1px solid rgba(46,125,50,.25)}
+.api-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+.btn-chat{display:flex;align-items:center;gap:7px;background:var(--ac);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-family:var(--fh);font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;text-decoration:none}
+.btn-chat:hover{background:#A07209}
+.content{padding:28px 32px;display:flex;flex-direction:column;gap:20px}
+.panel{background:var(--surf);border:1px solid var(--brd);border-radius:12px;overflow:hidden}
+.ph{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--brd)}
+.pt{font-family:var(--fh);font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px}
+.pdot{width:7px;height:7px;border-radius:50%}
+.cta-pesee{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;background:var(--ac);color:#fff;border:none;font-family:var(--fh);font-size:12px;font-weight:700;cursor:pointer;text-decoration:none}
+.cta-pesee:hover{background:#A07209}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+thead tr{border-bottom:1px solid var(--brd)}
+thead th{text-align:left;padding:10px 20px;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--mu);font-weight:500}
+tbody tr{border-bottom:1px solid var(--brd);transition:background .1s}
+tbody tr:hover{background:var(--surf2)}
+tbody tr:last-child{border-bottom:none}
+td{padding:11px 20px;font-size:13px}
+.bid{font-family:var(--fm);color:var(--ac);font-size:12px}
+.gmq-up{color:var(--gn);font-weight:600}
+.gmq-down{color:var(--rd);font-weight:600}
+.gmq-neu{color:var(--mu)}
+@keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+.skel{background:linear-gradient(90deg,var(--surf2) 25%,var(--surf3) 50%,var(--surf2) 75%);background-size:800px 100%;animation:shimmer 1.4s infinite;border-radius:6px}
+.info-box{background:rgba(21,101,192,.06);border:1px solid rgba(21,101,192,.15);border-radius:10px;padding:16px 20px;display:flex;align-items:flex-start;gap:12px}
+.info-box-icon{font-size:20px;flex-shrink:0}
+.info-box-text{font-size:13px;color:var(--tx);line-height:1.6}
+</style>
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <div class="s-logo">
+    <div class="logo-row">
+      <div class="logo-ico"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M3 14c0-2.5 1.5-4.5 4-5.5M13 8.5c2.5 1 4 3 4 5.5M10 4a2 2 0 100 4 2 2 0 000-4z" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/><path d="M5 16.5c0-2.8 2.24-5 5-5s5 2.2 5 5" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/></svg></div>
+      <span class="logo-nm">BoviBot</span>
+    </div>
+    <div class="logo-tg">Gestion intelligente</div>
+  </div>
+  <nav class="s-nav">
+    <span class="nl">Principal</span>
+    <a class="ni" href="index.html"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>Tableau de bord</a>
+    <a class="ni" href="troupeau.html"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="6" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>Troupeau</a>
+    <a class="ni" href="gestations.html"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="6"/><path d="M8 5v3.5l2 2"/></svg>Gestations</a>
+    <span class="nl">Suivi</span>
+    <a class="ni" href="alertes.html"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 2v2M8 12v2M2 8h2M12 8h2"/><circle cx="8" cy="8" r="3"/></svg>Alertes<span class="nbadge" id="nb-count">—</span></a>
+    <a class="ni on" href="pesees.html"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 4h12M2 8h8M2 12h5"/></svg>Pesées</a>
+    <a class="ni" href="croissance.html"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 12l4-4 3 3 5-6"/></svg>Croissance (GMQ)</a>
+    <a class="ni" href="ventes.html"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 8h6M5 5h6M5 11h3"/></svg>Ventes</a>
+    <span class="nl">IA</span>
+    <a class="ni" href="chat.html"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 12V5a2 2 0 012-2h8a2 2 0 012 2v5a2 2 0 01-2 2H9l-3 2v-2H4a2 2 0 01-2-2z"/></svg>Chat BoviBot</a>
+  </nav>
+  <div class="s-foot"><div class="farm"><div class="farm-av">FD</div><div><p class="farm-nm">Ferme Diallo</p><p class="farm-sb">Thiès</p></div></div></div>
+</aside>
+<div class="main">
+  <div class="topbar">
+    <div class="tb-l"><h1>⚖️ Pesées</h1><p id="subtitle">Chargement…</p></div>
+    <div class="tb-r">
+      <div class="api-pill mock" id="api-pill"><span class="api-dot"></span><span id="api-lbl">Connexion…</span></div>
+      <span class="tb-time" id="live-time">--:--:--</span>
+      <a class="btn-chat" href="chat.html" onclick="sessionStorage.setItem('bovibot_prefill','Je veux saisir une pesée')">⚖️ Saisir via Chat</a>
+    </div>
+  </div>
+  <div class="content">
+    <div class="info-box">
+      <div class="info-box-icon">💡</div>
+      <div class="info-box-text">Pour enregistrer une nouvelle pesée, utilisez le <strong>Chat BoviBot</strong> en mode Action. Exemple : <em>"Enregistre une pesée de 95 kg pour TAG-006 aujourd'hui"</em></div>
+    </div>
+    <div class="panel">
+      <div class="ph">
+        <span class="pt"><span class="pdot" style="background:var(--ac)"></span>Historique des pesées</span>
+        <a class="cta-pesee" href="chat.html" onclick="sessionStorage.setItem('bovibot_prefill','Je veux saisir une pesée')">+ Nouvelle pesée</a>
+      </div>
+      <div class="tw">
+        <table>
+          <thead><tr><th>Date</th><th>Animal</th><th>Poids (kg)</th><th>Évolution</th><th>Agent</th></tr></thead>
+          <tbody id="tbody">
+            <tr><td colspan="5"><div class="skel" style="height:13px;margin:12px 20px"></div></td></tr>
+            <tr><td colspan="5"><div class="skel" style="height:13px;margin:12px 20px"></div></td></tr>
+            <tr><td colspan="5"><div class="skel" style="height:13px;margin:12px 20px"></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+<script>
+const BASE_URL="https://web-production-8a06a5.up.railway.app";
+const MOCK=[
+  {date_pesee:"2026-03-01",animal_id:1,numero_tag:"TAG-001",nom:"Baaba",poids_kg:320,evolution:15,agent:"Ousmane Diallo"},
+  {date_pesee:"2026-02-01",animal_id:1,numero_tag:"TAG-001",nom:"Baaba",poids_kg:305,evolution:15,agent:"Ousmane Diallo"},
+  {date_pesee:"2026-01-01",animal_id:1,numero_tag:"TAG-001",nom:"Baaba",poids_kg:290,evolution:null,agent:"Ousmane Diallo"},
+  {date_pesee:"2026-03-01",animal_id:2,numero_tag:"TAG-002",nom:"Yaye",poids_kg:280,evolution:12,agent:"Ousmane Diallo"},
+  {date_pesee:"2026-01-15",animal_id:6,numero_tag:"TAG-006",nom:"Veau1",poids_kg:85,evolution:23,agent:"Ousmane Diallo"},
+];
+
+async function load(){
+  let data;
+  try{
+    // Récupérer les pesées via une requête au chat
+    const r=await fetch(BASE_URL+'/api/chat',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({question:"Affiche toutes les pesées récentes avec le tag de l'animal, le nom, le poids et la date, ordonnées par date décroissante, limite 30",history:[],confirm_action:false,pending_action:{}})
+    });
+    if(!r.ok) throw new Error(r.status);
+    const resp=await r.json();
+    if(resp.data&&resp.data.length>0){
+      data=resp.data;
+      document.getElementById('api-pill').className='api-pill live';
+      document.getElementById('api-lbl').textContent='🟢 EN DIRECT';
+    } else throw new Error('no data');
+  }catch(e){
+    data=MOCK;
+    document.getElementById('api-pill').className='api-pill mock';
+    document.getElementById('api-lbl').textContent='⚠ MODE DÉMO';
+  }
+  document.getElementById('subtitle').textContent=data.length+' pesées';
+  document.getElementById('tbody').innerHTML=data.map(p=>{
+    const ev=p.evolution!=null?(p.evolution>0?`<span class="gmq-up">+${p.evolution} kg</span>`:(p.evolution<0?`<span class="gmq-down">${p.evolution} kg</span>`:'—')):'<span class="gmq-neu">—</span>';
+    const d=p.date_pesee?new Date(p.date_pesee).toLocaleDateString('fr-FR'):'—';
+    const tag=p.numero_tag||'';
+    const nom=p.nom||p.animal_id||'';
+    return `<tr><td>${d}</td><td><span class="bid">${tag}</span> ${nom}</td><td><strong>${p.poids_kg||'—'}</strong></td><td>${ev}</td><td>${p.agent||'—'}</td></tr>`;
+  }).join('');
+}
+function tick(){document.getElementById('live-time').textContent=new Date().toLocaleTimeString('fr-FR');}
+tick();setInterval(tick,1000);
+load();
+</script>
+</body>
+</html>

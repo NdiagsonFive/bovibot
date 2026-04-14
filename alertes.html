@@ -226,19 +226,19 @@
     </div>
     <nav class="sidebar-nav">
       <span class="nav-label">Principal</span>
-      <div class="nav-item">
+      <a class="nav-item" href="index.html">
         <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>
         Tableau de bord
       </div>
-      <div class="nav-item">
+      <a class="nav-item" href="troupeau.html">
         <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="6" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>
         Troupeau
       </div>
-      <div class="nav-item">
+      <a class="nav-item" href="pesees.html">
         <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 4h12M2 8h8M2 12h5"/></svg>
         Pesées
       </div>
-      <div class="nav-item">
+      <a class="nav-item" href="gestations.html">
         <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="6"/><path d="M8 5v3.5l2 2"/></svg>
         Gestations
       </div>
@@ -248,16 +248,16 @@
         Alertes
         <span class="nav-badge" id="nb-badge">3</span>
       </div>
-      <div class="nav-item">
+      <a class="nav-item" href="croissance.html">
         <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 12l4-4 3 3 5-6"/></svg>
         Croissance (GMQ)
       </div>
-      <div class="nav-item">
+      <a class="nav-item" href="ventes.html">
         <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 8h6M5 5h6M5 11h3"/></svg>
         Ventes
       </div>
       <span class="nav-label">IA</span>
-      <div class="nav-item">
+      <a class="nav-item" href="chat.html">
         <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 12V5a2 2 0 012-2h8a2 2 0 012 2v5a2 2 0 01-2 2H9l-3 2v-2H4a2 2 0 01-2-2z"/></svg>
         Chat BoviBot
       </div>
@@ -290,7 +290,7 @@
           <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.5l3 3 6-6"/></svg>
           Tout résoudre
         </button>
-        <button class="btn-chat" onclick="alert('Redirige vers Chat BoviBot')">
+        <button class="btn-chat" onclick="window.location='chat.html'">
           <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M1 9V4a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8L5 11V9H3a2 2 0 01-2-2z"/></svg>
           Chat BoviBot
         </button>
@@ -742,8 +742,14 @@
   async function marquerResolu(id) {
     try {
       await fetch(BASE_URL + '/api/alertes/' + id + '/traiter', { method: 'POST' });
-      location.reload();
-    } catch(e) { alert('Erreur lors du traitement'); }
+    } catch(e) { console.warn('API indisponible'); }
+    const card = document.getElementById('card-' + id);
+    if(card) {
+      card.dataset.statut = 'resolved';
+      card.classList.add('resolved');
+      updateCounts();
+      applyFilters();
+    }
   }
   const cards = document.querySelectorAll('.alert-card');
   let currentSeverity = 'all';
@@ -873,7 +879,8 @@
   function toggleSort() {}
 
   function openChat(msg) {
-    alert('Redirection vers Chat BoviBot avec : "' + msg + '"');
+    sessionStorage.setItem('bovibot_prefill', msg);
+    window.location = 'chat.html';
   }
 
   // Init — show only active
