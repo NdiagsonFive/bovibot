@@ -34,8 +34,8 @@ html,body{background:var(--bg);color:var(--tx);font-family:var(--fb);font-size:1
 .tb-r{display:flex;align-items:center;gap:10px}
 .tb-time{font-family:var(--fm);font-size:12px;color:var(--mu)}
 .api-pill{display:flex;align-items:center;gap:5px;font-size:11px;padding:4px 10px;border-radius:20px;font-family:var(--fm)}
-.api-pill.mock{background:rgba(240,136,62,.12);color:var(--or);border:1px solid rgba(240,136,62,.25)}
-.api-pill.live{background:rgba(63,185,80,.12);color:var(--gn);border:1px solid rgba(63,185,80,.25)}
+.api-pill.mock{background:rgba(230,81,0,.12);color:var(--or);border:1px solid rgba(230,81,0,.25)}
+.api-pill.live{background:rgba(46,125,50,.12);color:var(--gn);border:1px solid rgba(46,125,50,.25)}
 .api-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
 .content{padding:28px 32px;display:flex;flex-direction:column;gap:20px}
 .filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
@@ -55,7 +55,7 @@ html,body{background:var(--bg);color:var(--tx);font-family:var(--fb);font-size:1
 table{width:100%;border-collapse:collapse}
 thead tr{border-bottom:1px solid var(--brd)}
 thead th{text-align:left;padding:10px 16px;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--mu);font-weight:500}
-tbody tr{border-bottom:1px solid var(--brd);transition:background .1s;cursor:pointer}
+tbody tr{border-bottom:1px solid var(--brd);transition:background .1s}
 tbody tr:hover{background:var(--surf2)}
 tbody tr:last-child{border-bottom:none}
 td{padding:11px 16px;font-size:13px}
@@ -69,7 +69,6 @@ td{padding:11px 16px;font-size:13px}
 .empty{text-align:center;padding:40px;color:var(--mu)}
 @keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
 .skel{background:linear-gradient(90deg,var(--surf2) 25%,var(--surf3) 50%,var(--surf2) 75%);background-size:800px 100%;animation:shimmer 1.4s infinite;border-radius:6px}
-@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 </style>
 </head>
 <body>
@@ -89,6 +88,8 @@ td{padding:11px 16px;font-size:13px}
     <a class="ni" href="gestations.html"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="6"/><path d="M8 5v3.5l2 2"/></svg>Gestations</a>
     <span class="nl">Suivi</span>
     <a class="ni" href="alertes.html"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 2v2M8 12v2M2 8h2M12 8h2"/><circle cx="8" cy="8" r="3"/></svg>Alertes<span class="nbadge" id="nb-count">—</span></a>
+    <a class="ni" href="#"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 12l4-4 3 3 5-6"/></svg>Croissance</a>
+    <a class="ni" href="#"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 8h6M5 5h6M5 11h3"/></svg>Ventes</a>
     <span class="nl">IA</span>
     <a class="ni" href="chat.html"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 12V5a2 2 0 012-2h8a2 2 0 012 2v5a2 2 0 01-2 2H9l-3 2v-2H4a2 2 0 01-2-2z"/></svg>Chat BoviBot</a>
   </nav>
@@ -98,38 +99,32 @@ td{padding:11px 16px;font-size:13px}
   <div class="topbar">
     <div class="tb-l"><h1>🐄 Troupeau</h1><p id="subtitle">Chargement…</p></div>
     <div class="tb-r">
-      <div class="api-pill mock" id="api-pill"><span class="api-dot"></span><span id="api-lbl">MODE DÉMO</span></div>
+      <div class="api-pill mock" id="api-pill"><span class="api-dot"></span><span id="api-lbl">Connexion…</span></div>
       <span class="tb-time" id="live-time">--:--:--</span>
     </div>
   </div>
   <div class="content">
     <div class="filters">
-      <input class="search" id="search" placeholder="🔍 Rechercher par nom, tag, race…" oninput="filterTable()">
-      <button class="fi on" onclick="setFilter('tous')">Tous</button>
-      <button class="fi" onclick="setFilter('actif')">Actifs</button>
-      <button class="fi" onclick="setFilter('gestation')">Gestation</button>
-      <button class="fi" onclick="setFilter('quarantaine')">Quarantaine</button>
-      <button class="fi" onclick="setFilter('vendu')">Vendus</button>
+      <input class="search" id="search" placeholder="🔍 Rechercher par nom, tag, race…" oninput="renderTable()">
+      <button class="fi on" data-f="tous"       onclick="setFilter(this)">Tous</button>
+      <button class="fi"    data-f="actif"      onclick="setFilter(this)">Actifs</button>
+      <button class="fi"    data-f="gestation"  onclick="setFilter(this)">Gestation</button>
+      <button class="fi"    data-f="quarantaine"onclick="setFilter(this)">Quarantaine</button>
+      <button class="fi"    data-f="vendu"      onclick="setFilter(this)">Vendus</button>
     </div>
     <div class="panel">
       <div class="ph">
         <span class="pt"><span class="pdot" style="background:var(--bl)"></span>Liste des animaux</span>
-        <button class="rbtn" id="rbtn" onclick="loadBovins(true)">
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M10.5 6A4.5 4.5 0 112.3 3.2M2 1v2.5H4.5"/></svg>Actualiser
-        </button>
+        <button class="rbtn" id="rbtn" onclick="load(true)"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M10.5 6A4.5 4.5 0 112.3 3.2M2 1v2.5H4.5"/></svg>Actualiser</button>
       </div>
-      <div class="tw">
-        <table>
-          <thead><tr><th>Tag</th><th>Nom</th><th>Race</th><th>Sexe</th><th>Âge</th><th>Poids (kg)</th><th>GMQ (g/j)</th><th>Statut</th></tr></thead>
-          <tbody id="tbody">
-            <tr><td colspan="8"><div class="skel" style="height:13px;margin:12px 16px"></div></td></tr>
-            <tr><td colspan="8"><div class="skel" style="height:13px;margin:12px 16px"></div></td></tr>
-            <tr><td colspan="8"><div class="skel" style="height:13px;margin:12px 16px"></div></td></tr>
-            <tr><td colspan="8"><div class="skel" style="height:13px;margin:12px 16px"></div></td></tr>
-            <tr><td colspan="8"><div class="skel" style="height:13px;margin:12px 16px"></div></td></tr>
-          </tbody>
-        </table>
-      </div>
+      <div class="tw"><table>
+        <thead><tr><th>Tag</th><th>Nom</th><th>Race</th><th>Sexe</th><th>Âge</th><th>Poids (kg)</th><th>GMQ (g/j)</th><th>Statut</th></tr></thead>
+        <tbody id="tbody">
+          <tr><td colspan="8"><div class="skel" style="height:13px;margin:12px 16px"></div></td></tr>
+          <tr><td colspan="8"><div class="skel" style="height:13px;margin:12px 16px"></div></td></tr>
+          <tr><td colspan="8"><div class="skel" style="height:13px;margin:12px 16px"></div></td></tr>
+        </tbody>
+      </table></div>
     </div>
   </div>
 </div>
@@ -137,72 +132,61 @@ td{padding:11px 16px;font-size:13px}
 <script>
 const BASE_URL = "https://web-production-8a06a5.up.railway.app";
 const MOCK = [
-  {numero_tag:"BV-001",nom:"Fatou",   race:"Zébu Gobra",sexe:"F",age_mois:24,poids_actuel:382,gmq_kg_jour:0.82,statut:"actif"},
-  {numero_tag:"BV-004",nom:"Ndéye",   race:"Taurin",    sexe:"F",age_mois:18,poids_actuel:295,gmq_kg_jour:0.64,statut:"actif"},
-  {numero_tag:"BV-009",nom:"Aminata", race:"Zébu Gobra",sexe:"F",age_mois:36,poids_actuel:410,gmq_kg_jour:0.89,statut:"actif"},
-  {numero_tag:"BV-014",nom:"Kebbe",   race:"Métis",     sexe:"M",age_mois:8, poids_actuel:58, gmq_kg_jour:0.21,statut:"actif"},
-  {numero_tag:"BV-021",nom:"Rokhaya", race:"Zébu Gobra",sexe:"F",age_mois:30,poids_actuel:348,gmq_kg_jour:0.75,statut:"actif"},
-  {numero_tag:"BV-027",nom:"Soda",    race:"Taurin",    sexe:"F",age_mois:22,poids_actuel:310,gmq_kg_jour:0.60,statut:"actif"},
-  {numero_tag:"BV-032",nom:"Diara",   race:"Zébu Gobra",sexe:"F",age_mois:28,poids_actuel:365,gmq_kg_jour:0.78,statut:"actif"},
+  {numero_tag:"TAG-001",nom:"Baaba",race:"Zébu Gobra",sexe:"M",age_mois:38,poids_actuel:320,gmq_kg_jour:0.50,statut:"actif"},
+  {numero_tag:"TAG-002",nom:"Yaye", race:"Zébu Gobra",sexe:"F",age_mois:46,poids_actuel:280,gmq_kg_jour:0.42,statut:"actif"},
+  {numero_tag:"TAG-003",nom:"Samba",race:"Ndama",     sexe:"M",age_mois:27,poids_actuel:200,gmq_kg_jour:0.00,statut:"actif"},
+  {numero_tag:"TAG-004",nom:"Fatou",race:"Ndama",     sexe:"F",age_mois:31,poids_actuel:195,gmq_kg_jour:0.00,statut:"actif"},
+  {numero_tag:"TAG-005",nom:"Lait", race:"Holstein",  sexe:"F",age_mois:52,poids_actuel:580,gmq_kg_jour:0.00,statut:"actif"},
+  {numero_tag:"TAG-006",nom:"Veau1",race:"Zébu Gobra",sexe:"M",age_mois:5, poids_actuel:85, gmq_kg_jour:0.75,statut:"actif"},
+  {numero_tag:"TAG-007",nom:"Veau2",race:"Zébu Gobra",sexe:"F",age_mois:4, poids_actuel:72, gmq_kg_jour:0.70,statut:"actif"},
 ];
+let allData=[], currentFilter='tous';
+const stMap={actif:'ok',gestation:'gest',quarantaine:'al',mort:'al',vendu:'al'};
+const stLbl={actif:'Actif',gestation:'Gestation',quarantaine:'Quarantaine',mort:'Mort',vendu:'Vendu'};
 
-let allData = [];
-let currentFilter = 'tous';
-
-const stMap = {actif:'ok',gestation:'gest',quarantaine:'al',mort:'al',vendu:'al'};
-const stLbl = {actif:'Actif',gestation:'Gestation',quarantaine:'Quarantaine',mort:'Mort',vendu:'Vendu'};
-
-function spin(on){ document.getElementById('rbtn').classList.toggle('spin',on); }
-
-async function loadBovins(manual=false){
-  spin(true);
-  let data;
+async function load(manual=false){
+  document.getElementById('rbtn').classList.add('spin');
   try {
-    const r = await fetch(BASE_URL+'/api/animaux');
+    const r=await fetch(BASE_URL+'/api/animaux');
     if(!r.ok) throw new Error(r.status);
-    data = await r.json();
+    allData=await r.json();
     document.getElementById('api-pill').className='api-pill live';
-    document.getElementById('api-lbl').textContent='EN DIRECT';
-  } catch(e) {
-    data = MOCK;
+    document.getElementById('api-lbl').textContent='🟢 EN DIRECT';
+  } catch(e){
+    allData=MOCK;
     document.getElementById('api-pill').className='api-pill mock';
-    document.getElementById('api-lbl').textContent='MODE DÉMO';
+    document.getElementById('api-lbl').textContent='⚠ MODE DÉMO';
   }
-  allData = data;
-  document.getElementById('farm-count').textContent = data.length;
-  document.getElementById('subtitle').textContent = data.length + ' animaux trouvés';
+  document.getElementById('farm-count').textContent=allData.length;
+  document.getElementById('subtitle').textContent=allData.length+' animaux';
   renderTable();
-  spin(false);
+  document.getElementById('rbtn').classList.remove('spin');
 }
 
 function renderTable(){
-  const search = document.getElementById('search').value.toLowerCase();
-  let rows = allData.filter(b => {
-    const matchFilter = currentFilter === 'tous' || b.statut === currentFilter;
-    const matchSearch = !search ||
-      (b.numero_tag||'').toLowerCase().includes(search) ||
-      (b.nom||'').toLowerCase().includes(search) ||
-      (b.race||'').toLowerCase().includes(search);
-    return matchFilter && matchSearch;
+  const q=document.getElementById('search').value.toLowerCase();
+  const rows=allData.filter(b=>{
+    const mf=currentFilter==='tous'||b.statut===currentFilter;
+    const ms=!q||(b.numero_tag||'').toLowerCase().includes(q)||(b.nom||'').toLowerCase().includes(q)||(b.race||'').toLowerCase().includes(q);
+    return mf&&ms;
   });
-
-  if(rows.length === 0){
-    document.getElementById('tbody').innerHTML = `<tr><td colspan="8"><div class="empty">Aucun animal trouvé</div></td></tr>`;
+  if(!rows.length){
+    document.getElementById('tbody').innerHTML='<tr><td colspan="8"><div class="empty">Aucun animal trouvé</div></td></tr>';
     return;
   }
-
-  document.getElementById('tbody').innerHTML = rows.map(b => {
-    const gmq   = b.gmq_kg_jour != null ? Math.round(b.gmq_kg_jour*1000) : (b.gmq ?? 0);
-    const poids = b.poids_actuel ?? b.poids ?? 0;
-    const age   = b.age_mois != null ? (b.age_mois >= 12 ? Math.floor(b.age_mois/12)+'a '+( b.age_mois%12)+'m' : b.age_mois+'m') : '—';
-    const pct   = Math.min(100, Math.round(gmq/10));
-    const gc    = gmq < 400 ? 'var(--rd)' : gmq < 600 ? 'var(--ac)' : 'var(--gn)';
-    const st    = b.statut ?? 'actif';
+  document.getElementById('tbody').innerHTML=rows.map(b=>{
+    const gmq=b.gmq_kg_jour!=null?Math.round(b.gmq_kg_jour*1000):(b.gmq??0);
+    const poids=b.poids_actuel??b.poids??0;
+    const am=b.age_mois??0;
+    const age=am>=12?Math.floor(am/12)+'a '+(am%12)+'m':am+'m';
+    const st=b.statut??'actif';
+    const pct=Math.min(100,Math.round(gmq/10));
+    const gc=gmq<300?'var(--rd)':gmq<600?'var(--ac)':'var(--gn)';
     return `<tr>
       <td><span class="bid">${b.numero_tag??''}</span></td>
       <td><strong>${b.nom??''}</strong></td>
       <td><span class="rbadge">${b.race??''}</span></td>
-      <td>${b.sexe==='F'?'♀ Femelle':'♂ Mâle'}</td>
+      <td>${b.sexe==='F'?'♀':'♂'} ${b.sexe==='F'?'Femelle':'Mâle'}</td>
       <td>${age}</td>
       <td style="${st==='quarantaine'?'color:var(--rd);font-weight:600':''}">${poids}</td>
       <td>${gmq} <span class="gmqbar"><span class="gmqfill" style="width:${pct}%;background:${gc}"></span></span></td>
@@ -211,18 +195,16 @@ function renderTable(){
   }).join('');
 }
 
-function setFilter(f){
-  currentFilter = f;
-  document.querySelectorAll('.fi').forEach(b => b.classList.remove('on'));
-  event.target.classList.add('on');
+function setFilter(btn){
+  currentFilter=btn.dataset.f;
+  document.querySelectorAll('.fi').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
   renderTable();
 }
 
-function filterTable(){ renderTable(); }
-
-function tick(){ document.getElementById('live-time').textContent = new Date().toLocaleTimeString('fr-FR'); }
-tick(); setInterval(tick,1000);
-loadBovins();
+function tick(){document.getElementById('live-time').textContent=new Date().toLocaleTimeString('fr-FR');}
+tick();setInterval(tick,1000);
+load();
 </script>
 </body>
 </html>

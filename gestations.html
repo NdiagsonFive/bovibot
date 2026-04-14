@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#F5F0E8;--surf:#FDFAF4;--surf2:#EDE8DC;--surf3:#E4DDD0;--brd:rgba(160,140,110,0.18);--brd2:rgba(160,140,110,0.32);--tx:#2C2416;--mu:#8C7B5E;--ac:#B8860B;--gn:#2E7D32;--rd:#C62828;--or:#E65100;--bl:#1565C0;--pu:#6A1B9A;--te:#00695C;--fh:'Syne',sans-serif;--fb:'DM Sans',sans-serif;--fm:'DM Mono',monospace}
+:root{--bg:#F5F0E8;--surf:#FDFAF4;--surf2:#EDE8DC;--surf3:#E4DDD0;--brd:rgba(160,140,110,0.18);--brd2:rgba(160,140,110,0.32);--tx:#2C2416;--mu:#8C7B5E;--ac:#B8860B;--gn:#2E7D32;--rd:#C62828;--or:#E65100;--bl:#1565C0;--fh:'Syne',sans-serif;--fb:'DM Sans',sans-serif;--fm:'DM Mono',monospace}
 html,body{background:var(--bg);color:var(--tx);font-family:var(--fb);font-size:14px;min-height:100vh;line-height:1.5}
 .layout{display:flex;min-height:100vh}
 .sidebar{width:220px;flex-shrink:0;background:var(--surf);border-right:1px solid var(--brd);display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
@@ -34,30 +34,33 @@ html,body{background:var(--bg);color:var(--tx);font-family:var(--fb);font-size:1
 .tb-r{display:flex;align-items:center;gap:10px}
 .tb-time{font-family:var(--fm);font-size:12px;color:var(--mu)}
 .api-pill{display:flex;align-items:center;gap:5px;font-size:11px;padding:4px 10px;border-radius:20px;font-family:var(--fm)}
-.api-pill.mock{background:rgba(240,136,62,.12);color:var(--or);border:1px solid rgba(240,136,62,.25)}
-.api-pill.live{background:rgba(63,185,80,.12);color:var(--gn);border:1px solid rgba(63,185,80,.25)}
+.api-pill.mock{background:rgba(230,81,0,.12);color:var(--or);border:1px solid rgba(230,81,0,.25)}
+.api-pill.live{background:rgba(46,125,50,.12);color:var(--gn);border:1px solid rgba(46,125,50,.25)}
 .api-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
 .content{padding:28px 32px;display:flex;flex-direction:column;gap:20px}
-.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
-.card{background:var(--surf);border:1px solid var(--brd);border-radius:12px;padding:20px;transition:border-color .2s}
-.card:hover{border-color:var(--brd2)}
-.card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
-.card-id{font-family:var(--fm);font-size:13px;color:var(--ac);font-weight:500}
-.card-nom{font-family:var(--fh);font-size:16px;font-weight:700}
-.badge-urgent{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;background:rgba(248,81,73,.12);color:var(--rd)}
-.badge-soon{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;background:rgba(240,136,62,.12);color:var(--or)}
-.badge-ok{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;background:rgba(63,185,80,.12);color:var(--gn)}
-.card-info{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
-.ci-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--mu)}
-.ci-val{font-size:13px;font-weight:500;margin-top:2px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.card{background:var(--surf);border:1px solid var(--brd);border-radius:14px;padding:20px;transition:border-color .2s,transform .2s}
+.card:hover{border-color:var(--brd2);transform:translateY(-2px)}
+.card-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px}
+.card-tag{font-family:var(--fm);font-size:12px;color:var(--ac);margin-bottom:3px}
+.card-nom{font-family:var(--fh);font-size:17px;font-weight:700}
+.card-pere{font-size:11px;color:var(--mu);margin-top:2px}
+.badge{font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;white-space:nowrap}
+.badge.urgent{background:rgba(198,40,40,.12);color:var(--rd)}
+.badge.soon{background:rgba(230,81,0,.12);color:var(--or)}
+.badge.ok{background:rgba(46,125,50,.12);color:var(--gn)}
+.card-dates{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.cd-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--mu);margin-bottom:2px}
+.cd-val{font-size:13px;font-weight:500}
 .track{height:8px;border-radius:4px;background:var(--surf2);overflow:hidden;margin-bottom:6px}
-.fill{height:100%;border-radius:4px;transition:width .8s ease}
+.fill{height:100%;border-radius:4px}
 .track-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--mu)}
-.empty-state{text-align:center;padding:60px;color:var(--mu)}
-.empty-state .em-ico{font-size:48px;margin-bottom:12px}
-.empty-state p{font-size:14px}
+.empty-state{text-align:center;padding:60px;color:var(--mu);grid-column:1/-1}
+.empty-state .ico{font-size:48px;margin-bottom:12px}
 @keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
-.skel{background:linear-gradient(90deg,var(--surf2) 25%,var(--surf3) 50%,var(--surf2) 75%);background-size:800px 100%;animation:shimmer 1.4s infinite;border-radius:8px}
+.skel{background:linear-gradient(90deg,var(--surf2) 25%,var(--surf3) 50%,var(--surf2) 75%);background-size:800px 100%;animation:shimmer 1.4s infinite;border-radius:12px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.card{animation:fadeUp .4s ease both}
 </style>
 </head>
 <body>
@@ -76,7 +79,9 @@ html,body{background:var(--bg);color:var(--tx);font-family:var(--fb);font-size:1
     <a class="ni" href="troupeau.html"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="6" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>Troupeau</a>
     <a class="ni on" href="gestations.html"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="6"/><path d="M8 5v3.5l2 2"/></svg>Gestations</a>
     <span class="nl">Suivi</span>
-    <a class="ni" href="alertes.html"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 2v2M8 12v2M2 8h2M12 8h2"/><circle cx="8" cy="8" r="3"/></svg>Alertes<span class="nbadge" id="nb-count">—</span></a>
+    <a class="ni" href="alertes.html"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 2v2M8 12v2M2 8h2M12 8h2"/><circle cx="8" cy="8" r="3"/></svg>Alertes<span class="nbadge">—</span></a>
+    <a class="ni" href="#"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 12l4-4 3 3 5-6"/></svg>Croissance</a>
+    <a class="ni" href="#"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 8h6M5 5h6M5 11h3"/></svg>Ventes</a>
     <span class="nl">IA</span>
     <a class="ni" href="chat.html"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 12V5a2 2 0 012-2h8a2 2 0 012 2v5a2 2 0 01-2 2H9l-3 2v-2H4a2 2 0 01-2-2z"/></svg>Chat BoviBot</a>
   </nav>
@@ -86,15 +91,14 @@ html,body{background:var(--bg);color:var(--tx);font-family:var(--fb);font-size:1
   <div class="topbar">
     <div class="tb-l"><h1>🤰 Gestations en cours</h1><p id="subtitle">Chargement…</p></div>
     <div class="tb-r">
-      <div class="api-pill mock" id="api-pill"><span class="api-dot"></span><span id="api-lbl">MODE DÉMO</span></div>
+      <div class="api-pill mock" id="api-pill"><span class="api-dot"></span><span id="api-lbl">Connexion…</span></div>
       <span class="tb-time" id="live-time">--:--:--</span>
     </div>
   </div>
   <div class="content">
     <div class="cards" id="cards">
-      <div class="skel" style="height:200px"></div>
-      <div class="skel" style="height:200px"></div>
-      <div class="skel" style="height:200px"></div>
+      <div class="skel" style="height:220px"></div>
+      <div class="skel" style="height:220px"></div>
     </div>
   </div>
 </div>
@@ -102,72 +106,64 @@ html,body{background:var(--bg);color:var(--tx);font-family:var(--fb);font-size:1
 <script>
 const BASE_URL = "https://web-production-8a06a5.up.railway.app";
 const MOCK = [
-  {mere_id:9, mere_tag:"BV-009",mere_nom:"Aminata",pere_tag:"BV-003",date_saillie:"2024-10-01",date_velage_prevue:"2025-07-13",jours_restants:12},
-  {mere_id:4, mere_tag:"BV-004",mere_nom:"Ndéye",  pere_tag:"BV-003",date_saillie:"2024-10-18",date_velage_prevue:"2025-07-30",jours_restants:29},
-  {mere_id:32,mere_tag:"BV-032",mere_nom:"Diara",  pere_tag:"BV-011",date_saillie:"2024-12-15",date_velage_prevue:"2025-09-27",jours_restants:75},
+  {mere_tag:"TAG-002",mere_nom:"Yaye", pere_tag:"TAG-001",date_saillie:"2025-08-01",date_velage_prevue:"2026-05-10",jours_restants:27},
+  {mere_tag:"TAG-004",mere_nom:"Fatou",pere_tag:"TAG-003",date_saillie:"2025-09-15",date_velage_prevue:"2026-06-24",jours_restants:72},
 ];
-const TOTAL = 285;
+const TOTAL=285;
 
 async function load(){
   let data;
-  try {
-    const r = await fetch(BASE_URL+'/api/reproduction/en-cours');
+  try{
+    const r=await fetch(BASE_URL+'/api/reproduction/en-cours');
     if(!r.ok) throw new Error(r.status);
-    data = await r.json();
+    data=await r.json();
     document.getElementById('api-pill').className='api-pill live';
-    document.getElementById('api-lbl').textContent='EN DIRECT';
-  } catch(e) {
-    data = MOCK;
+    document.getElementById('api-lbl').textContent='🟢 EN DIRECT';
+  }catch(e){
+    data=MOCK;
+    document.getElementById('api-pill').className='api-pill mock';
+    document.getElementById('api-lbl').textContent='⚠ MODE DÉMO';
   }
-
-  document.getElementById('subtitle').textContent = data.length + ' gestation(s) en cours';
-
-  if(data.length === 0){
-    document.getElementById('cards').innerHTML = `
-      <div class="empty-state" style="grid-column:1/-1">
-        <div class="em-ico">🤰</div>
-        <p>Aucune gestation en cours</p>
-      </div>`;
+  document.getElementById('subtitle').textContent=data.length+' gestation(s) en cours';
+  if(!data.length){
+    document.getElementById('cards').innerHTML='<div class="empty-state"><div class="ico">🤰</div><p>Aucune gestation en cours actuellement</p></div>';
     return;
   }
-
-  document.getElementById('cards').innerHTML = data.map(g => {
-    const restant = g.jours_restants ?? 0;
-    const jours   = TOTAL - restant;
-    const pct     = Math.max(0, Math.min(100, Math.round(jours/TOTAL*100)));
-    const couleur = restant <= 15 ? 'var(--rd)' : restant <= 30 ? 'var(--or)' : 'var(--gn)';
-    const badge   = restant <= 15
-      ? `<span class="badge-urgent">⚠ Dans ${restant}j</span>`
-      : restant <= 30
-      ? `<span class="badge-soon">Dans ${restant}j</span>`
-      : `<span class="badge-ok">Dans ${restant}j</span>`;
-    const tag  = g.mere_tag  ?? '';
-    const nom  = g.mere_nom  ?? '';
-    const pere = g.pere_tag  ?? '—';
-    const eta  = g.date_velage_prevue ? new Date(g.date_velage_prevue).toLocaleDateString('fr-FR') : '—';
-    const sail = g.date_saillie ? new Date(g.date_saillie).toLocaleDateString('fr-FR') : '—';
-    return `<div class="card">
+  document.getElementById('cards').innerHTML=data.map((g,i)=>{
+    const restant=g.jours_restants??0;
+    const jours=TOTAL-restant;
+    const pct=Math.max(0,Math.min(100,Math.round(jours/TOTAL*100)));
+    const couleur=restant<=15?'var(--rd)':restant<=30?'var(--or)':'var(--gn)';
+    const badgeCls=restant<=15?'urgent':restant<=30?'soon':'ok';
+    const badgeTxt=restant<=0?'🚨 Imminent !':restant<=15?'⚠ Dans '+restant+'j':'Dans '+restant+'j';
+    const tag=g.mere_tag??'';
+    const nom=g.mere_nom??'';
+    const pere=g.pere_tag??'—';
+    const sail=g.date_saillie?new Date(g.date_saillie).toLocaleDateString('fr-FR'):'—';
+    const eta=g.date_velage_prevue?new Date(g.date_velage_prevue).toLocaleDateString('fr-FR'):'—';
+    return `<div class="card" style="animation-delay:${i*.08}s">
       <div class="card-head">
         <div>
-          <div class="card-id">${tag}</div>
+          <div class="card-tag">${tag}</div>
           <div class="card-nom">${nom}</div>
+          <div class="card-pere">♂ Père : ${pere}</div>
         </div>
-        ${badge}
+        <span class="badge ${badgeCls}">${badgeTxt}</span>
       </div>
-      <div class="card-info">
-        <div><div class="ci-lbl">Père</div><div class="ci-val">${pere}</div></div>
-        <div><div class="ci-lbl">Saillie</div><div class="ci-val">${sail}</div></div>
-        <div><div class="ci-lbl">Vêlage prévu</div><div class="ci-val">${eta}</div></div>
-        <div><div class="ci-lbl">Avancement</div><div class="ci-val">${jours} / ${TOTAL} jours</div></div>
+      <div class="card-dates">
+        <div><div class="cd-lbl">Date saillie</div><div class="cd-val">${sail}</div></div>
+        <div><div class="cd-lbl">Vêlage prévu</div><div class="cd-val">${eta}</div></div>
+        <div><div class="cd-lbl">Jours écoulés</div><div class="cd-val">${jours} / ${TOTAL}</div></div>
+        <div><div class="cd-lbl">Avancement</div><div class="cd-val">${pct}%</div></div>
       </div>
       <div class="track"><div class="fill" style="width:${pct}%;background:${couleur}"></div></div>
-      <div class="track-labels"><span>${pct}% complété</span><span style="color:${couleur};font-weight:500">${restant <= 0 ? '🚨 Imminent !' : restant+' jours restants'}</span></div>
+      <div class="track-labels"><span>Conception</span><span style="color:${couleur};font-weight:600">${restant<=0?'Vêlage imminent':restant+' jours restants'}</span></div>
     </div>`;
   }).join('');
 }
 
-function tick(){ document.getElementById('live-time').textContent = new Date().toLocaleTimeString('fr-FR'); }
-tick(); setInterval(tick,1000);
+function tick(){document.getElementById('live-time').textContent=new Date().toLocaleTimeString('fr-FR');}
+tick();setInterval(tick,1000);
 load();
 </script>
 </body>
