@@ -3,7 +3,7 @@ BoviBot — Backend FastAPI
 Gestion d'élevage bovin avec LLM (Groq) + PL/SQL
 Projet L3 — ESP/UCAD
 """
-
+from groq import Groq
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -162,48 +162,27 @@ class ChatMessage(BaseModel):
     pending_action: dict = {}
 
 # ── Routes API ──────────────────────────────────────────────
+client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+
 @app.post("/api/chat")
-async def chat(msg: ChatMessage):
+async def chat_endpoint(request: dict):
     try:
-        if msg.confirm_action and msg.pending_action:
-            call_procedure(msg.pending_action["action"], msg.pending_action["params"])
-            return {"type": "action_done", "answer": "✅ Action effectuée avec succès !", "data": []}
-
-        llm = await ask_llm(msg.question, msg.history)
-        t = llm.get("type", "info")
-
-        if t == "query":
-            sql = llm.get("sql")
-            if not sql:
-                return {"type": "info", "answer": llm.get("explication", ""), "data": []}
-            data = execute_query(sql)
-            return {
-                "type": "query",
-                "answer": llm.get("explication", ""),
-                "data": data,
-                "sql": sql,
-                "count": len(data)
-            }
-
-        elif t == "action":
-            return {
-                "type": "action_pending",
-                "answer": llm.get("explication", ""),
-                "confirmation": llm.get("confirmation", "Confirmer cette action ?"),
-                "pending_action": {
-                    "action": llm.get("action"),
-                    "params": llm.get("params", {})
-                },
-                "data": []
-            }
-
-        else:
-            return {"type": "info", "answer": llm.get("explication", ""), "data": []}
-
-    except json.JSONDecodeError as e:
-        raise HTTPException(status_code=500, detail=f"Erreur parsing JSON LLM : {str(e)}")
+        user_message = request.get("message")
+        
+        # Appel à l'API Groq
+        completion = client.chat.completions.create(
+            model="mixtral-8x7b-32768", # ou le modèle que tu utilises
+            messages=[
+                {"role": "system", "content": "Tu es BoviBot, un expert en gestion de troupeaux bovins."},
+                {"role": "user", "content": user_message}
+            ]
+        )
+        
+        return {"response": completion.choices[0].message.content}
+    
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"Erreur Chat: {e}")
+        return {"error": str(e)}, 500
 
 
 @app.get("/api/dashboard")
