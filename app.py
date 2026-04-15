@@ -17,9 +17,10 @@ app = FastAPI(title="BoviBot API", version="1.0.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
+    allow_origin_regex=".*",
     allow_methods=["*"],
     allow_headers=["*"],
-    allow_credentials=True,
+    allow_credentials=False,  # ← False obligatoire avec allow_origins=["*"]
 )
 
 # ── Configuration ───────────────────────────────────────────
