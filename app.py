@@ -15,6 +15,25 @@ from fastapi import HTTPException
 load_dotenv()
 
 app = FastAPI(title="BoviBot API", version="1.0.0")
+@app.get("/setup-db")
+def setup_db():
+    import mysql.connector
+    conn = mysql.connector.connect(
+        host=os.getenv("DB_HOST"),
+        user="root",
+        password=os.getenv("DB_PASSWORD"),
+        port=int(os.getenv("DB_PORT"))
+    )
+    cursor = conn.cursor()
+    try:
+        cursor.execute("CREATE USER 'bovibot_user'@'%' IDENTIFIED BY 'BoviPass123!';")
+        cursor.execute("GRANT ALL PRIVILEGES ON *.* TO 'bovibot_user'@'%';")
+        cursor.execute("FLUSH PRIVILEGES;")
+        return "Utilisateur créé avec succès !"
+    except Exception as e:
+        return f"Erreur ou utilisateur déjà existant : {str(e)}"
+    finally:
+        conn.close()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
