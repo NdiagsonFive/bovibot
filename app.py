@@ -157,6 +157,7 @@ async def ask_llm(question: str, history: list = []) -> dict:
         raise ValueError(f"Réponse LLM non parseable : {content}")
 
 # ── Modèle de requête ───────────────────────────────────────
+
 class ChatMessage(BaseModel):
     question: str
     history: list = []
@@ -165,15 +166,20 @@ class ChatMessage(BaseModel):
 
 @app.post("/api/chat")
 async def chat(msg: ChatMessage):
-    api_key = os.getenv("OPENAI_API_KEY") # Utilise le nom configuré sur Railway
+    # Récupération sécurisée de la clé
+    api_key = os.getenv("OPENAI_API_KEY")
     
     try:
-        # 1. Gestion des actions confirmées
+        # 1. GESTION DES ACTIONS (Si confirmation reçue)
         if msg.confirm_action and msg.pending_action:
-            # On simule ou on appelle la procédure si elle existe
-            return {"type": "action_done", "answer": "✅ Action effectuée avec succès !", "data": []}
+            try:
+                # Appelle ta procédure de base de données
+                call_procedure(msg.pending_action["action"], msg.pending_action["params"])
+                return {"type": "action_done", "answer": "✅ L'opération a été enregistrée dans la base de données.", "data": []}
+            except Exception as e:
+                return {"type": "error", "answer": f"Erreur base de données : {str(e)}", "data": []}
 
-        # 2. Appel direct à l'IA (méthode robuste sans librairie groq)
+        # 2. APPEL IA (Méthode directe via httpx pour éviter les erreurs de modules)
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 "https://api.groq.com/openai/v1/chat/completions",
@@ -181,7 +187,7 @@ async def chat(msg: ChatMessage):
                 json={
                     "model": "llama-3.3-70b-versatile",
                     "messages": [
-                        {"role": "system", "content": "Tu es BoviBot. Si l'utilisateur pose une question sur le troupeau, réponds poliment. Format de réponse : JSON avec champs 'explication' et 'type'."},
+                        {"role": "system", "content": "Tu es BoviBot. Réponds TOUJOURS en JSON avec les clés 'type' (info/query/action), 'explication' et 'sql' (si besoin)."},
                         {"role": "user", "content": msg.question}
                     ],
                     "response_format": {"type": "json_object"}
@@ -192,110 +198,30 @@ async def chat(msg: ChatMessage):
         if response.status_code != 200:
             return {"type": "info", "answer": "L'IA est momentanément indisponible.", "data": []}
 
-        llm_data = response.json()['choices'][0]['message']['content']
-        llm = json.loads(llm_data)
+        llm_content = response.json()['choices'][0]['message']['content']
+        llm = json.loads(llm_content)
         
-        # 3. Traitement de la réponse
+        # 3. LOGIQUE SQL
         t = llm.get("type", "info")
-        
         if t == "query":
             sql = llm.get("sql")
-            # Sécurité : On vérifie si execute_query ne crash pas
             try:
+                # On tente l'exécution mais on ne plante pas si la DB refuse (Access Denied)
                 data = execute_query(sql) if sql else []
-            except Exception:
-                data = [] # Retourne une liste vide si la DB refuse la connexion
-            
-            return {
-                "type": "query",
-                "answer": llm.get("explication", "Voici les résultats :"),
-                "data": data,
-                "sql": sql,
-                "count": len(data)
-            }
-        
-        return {"type": "info", "answer": llm.get("explication", "Je ne peux pas répondre à cela."), "data": []}
+                return {
+                    "type": "query",
+                    "answer": llm.get("explication", "Voici les données :"),
+                    "data": data,
+                    "sql": sql,
+                    "count": len(data)
+                }
+            except Exception as db_err:
+                # On informe l'utilisateur sans faire d'erreur 500
+                return {"type": "info", "answer": f"L'IA a généré une requête, mais la base de données a répondu : {str(db_err)}", "data": []}
+
+        # Réponse info classique
+        return {"type": "info", "answer": llm.get("explication", "Je ne peux pas répondre précisément."), "data": []}
 
     except Exception as e:
-        # Évite de faire crasher le serveur, renvoie l'erreur proprement
-        return {"type": "error", "answer": f"Désolé, une erreur est survenue : {str(e)}", "data": []}
-
-@app.get("/api/dashboard")
-def dashboard():
-    stats = {}
-    queries = {
-        "total_actifs":      "SELECT COUNT(*) as n FROM animaux WHERE statut='actif'",
-        "femelles":          "SELECT COUNT(*) as n FROM animaux WHERE statut='actif' AND sexe='F'",
-        "males":             "SELECT COUNT(*) as n FROM animaux WHERE statut='actif' AND sexe='M'",
-        "en_gestation":      "SELECT COUNT(*) as n FROM reproduction WHERE statut='en_gestation'",
-        "alertes_actives":   "SELECT COUNT(*) as n FROM alertes WHERE traitee=FALSE",
-        "alertes_critiques": "SELECT COUNT(*) as n FROM alertes WHERE traitee=FALSE AND niveau='critical'",
-        "ventes_mois":       "SELECT COUNT(*) as n FROM ventes WHERE MONTH(date_vente)=MONTH(NOW())",
-        "ca_mois":           "SELECT COALESCE(SUM(prix_fcfa),0) as n FROM ventes WHERE MONTH(date_vente)=MONTH(NOW())",
-    }
-    for k, sql in queries.items():
-        result = execute_query(sql)
-        stats[k] = result[0]["n"] if result else 0
-    return stats
-
-
-@app.get("/api/animaux")
-def get_animaux():
-    return execute_query("""
-        SELECT a.*, r.nom as race,
-               fn_age_en_mois(a.id) as age_mois,
-               fn_gmq(a.id) as gmq_kg_jour
-        FROM animaux a
-        LEFT JOIN races r ON a.race_id = r.id
-        WHERE a.statut = 'actif'
-        ORDER BY a.numero_tag
-    """)
-
-
-@app.get("/api/alertes")
-def get_alertes():
-    return execute_query("""
-        SELECT al.*, a.numero_tag, a.nom as animal_nom
-        FROM alertes al
-        LEFT JOIN animaux a ON al.animal_id = a.id
-        WHERE al.traitee = FALSE
-        ORDER BY al.niveau DESC, al.date_creation DESC
-        LIMIT 50
-    """)
-
-
-@app.post("/api/alertes/{alert_id}/traiter")
-def traiter_alerte(alert_id: int):
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute("UPDATE alertes SET traitee=TRUE WHERE id=%s", (alert_id,))
-    conn.commit()
-    cursor.close()
-    conn.close()
-    return {"success": True}
-
-
-@app.get("/api/reproduction/en-cours")
-def get_gestations():
-    return execute_query("""
-        SELECT r.*, a.numero_tag as mere_tag, a.nom as mere_nom,
-               p.numero_tag as pere_tag,
-               DATEDIFF(r.date_velage_prevue, CURDATE()) as jours_restants
-        FROM reproduction r
-        JOIN animaux a ON r.mere_id = a.id
-        JOIN animaux p ON r.pere_id = p.id
-        WHERE r.statut = 'en_gestation'
-        ORDER BY r.date_velage_prevue ASC
-    """)
-
-
-@app.get("/health")
-def health():
-    return {"status": "ok", "app": "BoviBot", "llm": LLM_MODEL}
-
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run("app:app", host="0.0.0.0", port=8002, reload=True)
-
-
+        # Capture toutes les erreurs pour éviter le crash ASCII que tu as vu
+        return {"type": "error", "answer": f"Désolé, une erreur technique est survenue.", "data": []}
