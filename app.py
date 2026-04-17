@@ -32,9 +32,10 @@ DB_CONFIG = {
     "password": os.getenv("DB_PASSWORD", ""),
     "database": os.getenv("DB_NAME", "bovibot"),
 }
-LLM_API_KEY  = os.getenv("OPENAI_API_KEY")
-LLM_MODEL    = os.getenv("LLM_MODEL", "llama-3.3-70b-versatile")
-LLM_BASE_URL = os.getenv("LLM_BASE_URL", "https://api.groq.com/openai/v1")
+# Configuration API
+LLM_API_KEY = os.getenv("OPENAI_API_KEY") # On utilise la variable définie sur Railway
+LLM_MODEL = "llama-3.3-70b-versatile"
+LLM_BASE_URL = "https://api.groq.com/openai/v1"
 
 # ── Schéma BDD pour le prompt ───────────────────────────────
 DB_SCHEMA = """
