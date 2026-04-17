@@ -10,7 +10,8 @@ from pydantic import BaseModel
 import mysql.connector
 import os, re, json, httpx
 from dotenv import load_dotenv
-
+from pydantic import BaseModel
+from fastapi import HTTPException
 load_dotenv()
 
 app = FastAPI(title="BoviBot API", version="1.0.0")
