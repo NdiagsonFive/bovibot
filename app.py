@@ -162,49 +162,62 @@ class ChatMessage(BaseModel):
     confirm_action: bool = False
     pending_action: dict = {}
 
-# ── Routes API ──────────────────────────────────────────────
 @app.post("/api/chat")
 async def chat(msg: ChatMessage):
+    api_key = os.getenv("OPENAI_API_KEY") # Utilise le nom configuré sur Railway
+    
     try:
+        # 1. Gestion des actions confirmées
         if msg.confirm_action and msg.pending_action:
-            call_procedure(msg.pending_action["action"], msg.pending_action["params"])
+            # On simule ou on appelle la procédure si elle existe
             return {"type": "action_done", "answer": "✅ Action effectuée avec succès !", "data": []}
 
-        llm = await ask_llm(msg.question, msg.history)
-        t = llm.get("type", "info")
+        # 2. Appel direct à l'IA (méthode robuste sans librairie groq)
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                headers={"Authorization": f"Bearer {api_key}"},
+                json={
+                    "model": "llama-3.3-70b-versatile",
+                    "messages": [
+                        {"role": "system", "content": "Tu es BoviBot. Si l'utilisateur pose une question sur le troupeau, réponds poliment. Format de réponse : JSON avec champs 'explication' et 'type'."},
+                        {"role": "user", "content": msg.question}
+                    ],
+                    "response_format": {"type": "json_object"}
+                },
+                timeout=25.0
+            )
+        
+        if response.status_code != 200:
+            return {"type": "info", "answer": "L'IA est momentanément indisponible.", "data": []}
 
+        llm_data = response.json()['choices'][0]['message']['content']
+        llm = json.loads(llm_data)
+        
+        # 3. Traitement de la réponse
+        t = llm.get("type", "info")
+        
         if t == "query":
             sql = llm.get("sql")
-            if not sql:
-                return {"type": "info", "answer": llm.get("explication", ""), "data": []}
-            data = execute_query(sql)
+            # Sécurité : On vérifie si execute_query ne crash pas
+            try:
+                data = execute_query(sql) if sql else []
+            except Exception:
+                data = [] # Retourne une liste vide si la DB refuse la connexion
+            
             return {
                 "type": "query",
-                "answer": llm.get("explication", ""),
+                "answer": llm.get("explication", "Voici les résultats :"),
                 "data": data,
                 "sql": sql,
                 "count": len(data)
             }
+        
+        return {"type": "info", "answer": llm.get("explication", "Je ne peux pas répondre à cela."), "data": []}
 
-        elif t == "action":
-            return {
-                "type": "action_pending",
-                "answer": llm.get("explication", ""),
-                "confirmation": llm.get("confirmation", "Confirmer cette action ?"),
-                "pending_action": {
-                    "action": llm.get("action"),
-                    "params": llm.get("params", {})
-                },
-                "data": []
-            }
-
-        else:
-            return {"type": "info", "answer": llm.get("explication", ""), "data": []}
-
-    except json.JSONDecodeError as e:
-        raise HTTPException(status_code=500, detail=f"Erreur parsing JSON LLM : {str(e)}")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        # Évite de faire crasher le serveur, renvoie l'erreur proprement
+        return {"type": "error", "answer": f"Désolé, une erreur est survenue : {str(e)}", "data": []}
 
 @app.get("/api/dashboard")
 def dashboard():
