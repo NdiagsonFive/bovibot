@@ -18,22 +18,30 @@ app = FastAPI(title="BoviBot API", version="1.0.0")
 @app.get("/setup-db")
 def setup_db():
     import mysql.connector
-    conn = mysql.connector.connect(
-        host=os.getenv("DB_HOST"),
-        user="root",
-        password=os.getenv("DB_PASSWORD"),
-        port=int(os.getenv("DB_PORT"))
-    )
-    cursor = conn.cursor()
+    import os
     try:
-        cursor.execute("CREATE USER 'bovibot_user'@'%' IDENTIFIED BY 'BoviPass123!';")
+        # On force la connexion en tant que 'root' pour avoir les droits de création
+        conn = mysql.connector.connect(
+            host=os.getenv("DB_HOST"),
+            user="root",  # Ne pas changer, c'est pour l'admin
+            password=os.getenv("DB_PASSWORD"), # Il faut que ce soit le mot de passe root actuel !
+            port=int(os.getenv("DB_PORT", 3306))
+        )
+        cursor = conn.cursor()
+        
+        # Création du nouvel utilisateur
+        cursor.execute("CREATE USER IF NOT EXISTS 'bovibot_user'@'%' IDENTIFIED BY 'BoviPass123!';")
         cursor.execute("GRANT ALL PRIVILEGES ON *.* TO 'bovibot_user'@'%';")
         cursor.execute("FLUSH PRIVILEGES;")
-        return "Utilisateur créé avec succès !"
+        
+        return {"status": "success", "message": "✅ Utilisateur 'bovibot_user' créé avec le mot de passe 'BoviPass123!' !"}
+    
     except Exception as e:
-        return f"Erreur ou utilisateur déjà existant : {str(e)}"
+        return {"status": "error", "message": f"Erreur : {str(e)}"}
     finally:
-        conn.close()
+        if 'conn' in locals() and conn.is_connected():
+            cursor.close()
+            conn.close()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
